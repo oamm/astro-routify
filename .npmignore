@@ -5,3 +5,10 @@ scripts
 .idea
 .vscode
 .env
+# Ignore source files
+src/
+tests/
+bench/
+*.log
+tsconfig*.json
+rollup.config.*.js
