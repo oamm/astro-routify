@@ -10,12 +10,12 @@ export type Handler = (
 
 function logRequest(ctx: APIContext) {
     const {method, url} = ctx.request;
-    console.info(`[astro-router] → ${method} ${new URL(url).pathname}`);
+    console.info(`[astro-routify] → ${method} ${new URL(url).pathname}`);
 }
 
 function logResponse(status: number, start: number) {
     console.info(
-        `[astro-router] ← responded ${status} in ${Math.round(performance.now() - start)}ms`
+        `[astro-routify] ← responded ${status} in ${Math.round(performance.now() - start)}ms`
     );
 }
 
@@ -36,7 +36,7 @@ export function defineHandler(handler: Handler): APIRoute {
             logResponse(finalResponse.status, start);
             return finalResponse;
         } catch (err) {
-            console.error('[astro-router] handler error', err);
+            console.error('[astro-routify] handler error', err);
             const res = toAstroResponse(internalError(err));
             logResponse(res.status, start);
             return res;

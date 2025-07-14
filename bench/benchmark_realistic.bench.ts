@@ -50,9 +50,9 @@ describe('RouteTrie performance - realistic route shapes', () => {
     });
 
     bench(`Blog route: /blog/:year/:month/:slug`, () => {
-        const match = realisticTrie.find('/blog/2025/07/astro-router-release', HttpMethod.GET);
+        const match = realisticTrie.find('/blog/2025/07/astro-routify-release', HttpMethod.GET);
         if (
-            match?.params.slug !== 'astro-router-release' ||
+            match?.params.slug !== 'astro-routify-release' ||
             match?.params.year !== '2025' ||
             match?.params.month !== '07'
         ) {

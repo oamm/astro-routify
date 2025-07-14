@@ -1,4 +1,4 @@
-# astro-router
+# astro-routify
 
 **A high-performance API router for [Astro](https://astro.build/) built on a Trie matcher.**  
 Define API routes using clean, flat structures — no folders or boilerplate logic.
@@ -9,7 +9,7 @@ Define API routes using clean, flat structures — no folders or boilerplate log
 
 ```ts
 // src/pages/api/index.ts
-import { defineRoute, defineRouter, HttpMethod, ok } from "astro-router";
+import { defineRoute, defineRouter, HttpMethod, ok } from "astro-routify";
 
 export const GET = defineRouter([
   defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
@@ -20,7 +20,7 @@ export const GET = defineRouter([
 Or to handle everything in a single place:
 
 ```ts
-import { RouterBuilder, defineRoute, HttpMethod, ok } from "astro-router";
+import { RouterBuilder, defineRoute, HttpMethod, ok } from "astro-routify";
 
 const builder = new RouterBuilder();
 builder.register([
@@ -81,7 +81,7 @@ Designed specifically for `ALL`:
 ```ts
 const builder = new RouterBuilder();
 builder.register([
-  defineRoute(HttpMethod.GET, "/info", () => ok({ app: "astro-router" }))
+  defineRoute(HttpMethod.GET, "/info", () => ok({ app: "astro-routify" }))
 ]);
 export const ALL = builder.build();
 ```
@@ -114,7 +114,7 @@ defineRoute(HttpMethod.GET, "/items/:id", ({ params }) => {
 
 ---
 
-## 🤯 Why Use astro-router?
+## 🤯 Why Use astro-routify?
 
 ### ❌ Without it
 
@@ -166,7 +166,7 @@ src/
 │  │  ├─ ping.ts
 ```
 
-### ✅ With `astro-router`
+### ✅ With `astro-routify`
 
 ```ts
 //src/pages/api/[...slug].ts
@@ -180,7 +180,7 @@ export const ALL = defineRouter([
 
 ## 📈 Performance
 
-`astro-router` uses a Trie structure for fast route and method matching.  
+`astro-routify` uses a Trie structure for fast route and method matching.  
 It’s optimized for real-world route hierarchies, and avoids nested `if` chains.
 
 ## 🧪 Benchmarks
@@ -229,7 +229,7 @@ Results may vary slightly on different hardware.
 
 ## 🛠 Designed to Scale
 
-While focused on simplicity and speed today, `astro-router` is designed to evolve — enabling more advanced routing patterns in the future.
+While focused on simplicity and speed today, `astro-routify` is designed to evolve — enabling more advanced routing patterns in the future.
 
 ---
 

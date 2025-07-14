@@ -1,5 +1,5 @@
 {
-  "name": "astro-router",
+  "name": "astro-routify",
   "version": "1.0.0",
   "description": "A high-performance API router for Astro using a Trie-based matcher.",
   "type": "module",
@@ -56,10 +56,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:oamm/astro-router.git"
+    "url": "git@github.com:oamm/astro-routify.git"
   },
   "bugs": {
-    "url": "https://github.com/oamm/astro-router/issues"
+    "url": "https://github.com/oamm/astro-routify/issues"
   },
-  "homepage": "https://github.com/oamm/astro-router#readme"
+  "homepage": "https://github.com/oamm/astro-routify#readme"
 }
