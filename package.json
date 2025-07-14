@@ -1,0 +1,65 @@
+{
+  "name": "astro-router",
+  "version": "1.0.0",
+  "description": "A high-performance API router for Astro using a Trie-based matcher.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "types:bundle": "rollup -c rollup.config.mjs",
+    "clean": "rimraf dist",
+    "dev": "tsc --watch --project tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "bench": "vitest bench run bench/",
+    "prepublishOnly": "npm run clean && npm run build && npm run types:bundle",
+    "prepare": "npm run prepublishOnly"
+  },
+  "keywords": [
+    "astro",
+    "router",
+    "api-router",
+    "typescript",
+    "routing",
+    "astrojs",
+    "esm",
+    "trie"
+  ],
+  "author": "Alex Mora",
+  "license": "MIT",
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "rollup": "^4.45.0",
+    "rollup-plugin-dts": "^6.2.1",
+    "typescript": "^5.3.3",
+    "undici": "^7.11.0",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:oamm/astro-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oamm/astro-router/issues"
+  },
+  "homepage": "https://github.com/oamm/astro-router#readme"
+}

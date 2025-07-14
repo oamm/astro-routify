@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    // ✅ Generate *.d.ts files
+    "declarationDir": "./dist",
+    // ✅ Place them in the same output directory
+    "emitDeclarationOnly": false,
+    // ✅ Output both .js and .d.ts files (default behavior)
+    "outDir": "./dist",
+    // ✅ Where to put compiled outputs
+    "module": "ESNext",
+    // ✅ Ideal for modern ESM packages
+    "target": "ES2020",
+    "moduleResolution": "Bundler",
+    // ✅ Aligns with modern bundlers (like Vite, Astro, etc.)
+    "lib": [
+      "ES2020"
+    ],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "strict": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "tests",
+    "bench",
+    "**/*.test.ts"
+  ]
+}

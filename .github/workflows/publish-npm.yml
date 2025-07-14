@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    name: Release on npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies with pnpm
+        run: pnpm install --frozen-lockfile
+
+      - name: Ensure tag matches package.json version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "v$PKG_VERSION" ]; then
+            echo "Git tag ($TAG) does not match package.json version (v$PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Check if version already exists on npm
+        run: |
+          if npm view $(node -p "require('./package.json').name")@$(node -p "require('./package.json').version") > /dev/null 2>&1; then
+            echo "Version already exists on npm. Skipping publish."
+            exit 0
+          fi
+
+      - name: Build and bundle types
+        run: |
+          pnpm run clean
+          pnpm run build
+          pnpm run types:bundle
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
