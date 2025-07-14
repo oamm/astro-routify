@@ -29,6 +29,13 @@ jobs:
         with:
           version: 8
 
+      - name: Check files in workspace
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Listing files:"
+          find . -type f
+
       - name: Install dependencies with pnpm
         run: pnpm install --frozen-lockfile
 
