@@ -3,7 +3,17 @@
 **A high-performance API router for [Astro](https://astro.build/) built on a Trie matcher.**  
 Define API routes using clean, flat structures — no folders or boilerplate logic.
 
+![npm](https://img.shields.io/npm/v/astro-routify)
+![license](https://img.shields.io/npm/l/astro-routify)
+![downloads](https://img.shields.io/npm/dt/astro-routify)
+
 ---
+
+## Installing
+
+```shell
+$ npm install astro-routify
+```
 
 ## ⚡️ Quickstart
 
@@ -196,7 +206,7 @@ Tests ran on a mid-range development setup:
 - **GPU**: NVIDIA GeForce GTX 1080 (8 GB)
 - **OS**: Windows 10 Pro 64-bit
 - **Node.js**: v20.x
-- **Benchmark Tool**: [Vitest Bench](https://vitest.dev/guide/benchmarks.html)
+- **Benchmark Tool**: [Vitest Bench](https://vitest.dev/guide/features.html#benchmarking)
 
 Results may vary slightly on different hardware.
 
