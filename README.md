@@ -19,30 +19,40 @@ $ npm install astro-routify
 
 ```ts
 // src/pages/api/index.ts
-import { defineRoute, defineRouter, HttpMethod, ok } from "astro-routify";
+import {defineRoute, defineRouter, HttpMethod, ok} from "astro-routify";
 
 export const GET = defineRouter([
-  defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
-  defineRoute(HttpMethod.GET, "/users/:id", ({ params }) => ok({ id: params.id }))
+    defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
+    defineRoute(HttpMethod.GET, "/users/:id", ({params}) => ok({id: params.id}))
 ]);
 ```
 
 Or to handle everything in a single place:
 
 ```ts
-import { RouterBuilder, defineRoute, HttpMethod, ok } from "astro-routify";
+import {RouterBuilder, defineRoute, HttpMethod, ok} from "astro-routify";
 
 const builder = new RouterBuilder();
 builder.register([
-  defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
-  defineRoute(HttpMethod.POST, "/submit", async ({ request }) => {
-    const body = await request.json();
-    return ok({ received: body });
-  })
+    defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
+    defineRoute(HttpMethod.POST, "/submit", async ({request}) => {
+        const body = await request.json();
+        return ok({received: body});
+    })
 ]);
 
 export const ALL = builder.build(); // catch-all
 ```
+
+## 💡 Full Example
+
+You can find an implementation example in the [astro-routify-example](https://github.com/oamm/astro-routify-example) repository.
+It showcases a minimal Astro app with API endpoints configured under:
+
+```shell
+  /src/pages/api/[...path].ts
+```
+This setup demonstrates how to route requests dynamically using astro-routify, while still leveraging Astro's native endpoint system.
 
 ---
 
@@ -67,8 +77,8 @@ export const ALL = builder.build(); // catch-all
 Declare a single route:
 
 ```ts
-defineRoute(HttpMethod.GET, "/users/:id", ({ params }) => {
-  return ok({ userId: params.id });
+defineRoute(HttpMethod.GET, "/users/:id", ({params}) => {
+    return ok({userId: params.id});
 });
 ```
 
@@ -78,7 +88,7 @@ Group multiple routes under one HTTP method handler:
 
 ```ts
 export const GET = defineRouter([
-  defineRoute(HttpMethod.GET, "/health", () => ok("ok"))
+    defineRoute(HttpMethod.GET, "/health", () => ok("ok"))
 ]);
 ```
 
@@ -91,7 +101,7 @@ Designed specifically for `ALL`:
 ```ts
 const builder = new RouterBuilder();
 builder.register([
-  defineRoute(HttpMethod.GET, "/info", () => ok({ app: "astro-routify" }))
+    defineRoute(HttpMethod.GET, "/info", () => ok({app: "astro-routify"}))
 ]);
 export const ALL = builder.build();
 ```
@@ -117,8 +127,8 @@ internalError(err);      // 500
 Any route param like `:id` is extracted into `ctx.params`:
 
 ```ts
-defineRoute(HttpMethod.GET, "/items/:id", ({ params }) => {
-  return ok({ itemId: params.id });
+defineRoute(HttpMethod.GET, "/items/:id", ({params}) => {
+    return ok({itemId: params.id});
 });
 ```
 
@@ -181,8 +191,8 @@ src/
 ```ts
 //src/pages/api/[...slug].ts
 export const ALL = defineRouter([
-  defineRoute(HttpMethod.GET, "/ping", () => ok({ pong: true })),
-  defineRoute(HttpMethod.GET, "/users/:id", ({ params }) => ok({ id: params.id }))
+    defineRoute(HttpMethod.GET, "/ping", () => ok({pong: true})),
+    defineRoute(HttpMethod.GET, "/users/:id", ({params}) => ok({id: params.id}))
 ]);
 ```
 
@@ -209,7 +219,6 @@ Tests ran on a mid-range development setup:
 - **Benchmark Tool**: [Vitest Bench](https://vitest.dev/guide/features.html#benchmarking)
 
 Results may vary slightly on different hardware.
-
 
 ### 🔬 Realistic route shapes (5000 registered routes):
 
@@ -239,7 +248,8 @@ Results may vary slightly on different hardware.
 
 ## 🛠 Designed to Scale
 
-While focused on simplicity and speed today, `astro-routify` is designed to evolve — enabling more advanced routing patterns in the future.
+While focused on simplicity and speed today, `astro-routify` is designed to evolve — enabling more advanced routing
+patterns in the future.
 
 ---
 
