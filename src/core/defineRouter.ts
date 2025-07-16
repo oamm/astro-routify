@@ -6,6 +6,7 @@ import type {Route} from './defineRoute';
 import {normalizeMethod} from './HttpMethod';
 
 export interface RouterOptions {
+    basePath?: string;
     /** Custom 404 handler */
     onNotFound?: () => ReturnType<typeof notFound>;
 }
@@ -17,9 +18,16 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
         trie.insert(route.path, route.method, route.handler);
     }
 
-    // Wrap every user handler through defineHandler for uniform logging & error handling
     return async (ctx: APIContext): Promise<Response> => {
-        const path = new URL(ctx.request.url).pathname.replace(/^\/api/, '');
+        const pathname = new URL(ctx.request.url).pathname;
+
+        let basePath = options.basePath ?? '/api';
+        if (!basePath.startsWith('/')) {
+            basePath = '/' + basePath;
+        }
+        const basePathRegex = new RegExp(`^${basePath}`);
+
+        const path = pathname.replace(basePathRegex, '');
         const method = normalizeMethod(ctx.request.method);
 
         const {handler, allowed, params} = trie.find(path, method);
