@@ -1,6 +1,3 @@
-// ────────────────────────────────────────────────────────────────────────────────
-// defineHandler.ts
-// ────────────────────────────────────────────────────────────────────────────────
 import type {APIContext, APIRoute} from 'astro';
 import {internalError, toAstroResponse, type ResultResponse} from './responseHelpers';
 

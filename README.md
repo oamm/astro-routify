@@ -6,6 +6,7 @@ Define API routes using clean, flat structures — no folders or boilerplate log
 ![npm](https://img.shields.io/npm/v/astro-routify)
 ![license](https://img.shields.io/npm/l/astro-routify)
 ![downloads](https://img.shields.io/npm/dt/astro-routify)
+![feedback-welcome](https://img.shields.io/badge/feedback-welcome-blue)
 
 ---
 
