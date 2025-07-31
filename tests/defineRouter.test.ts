@@ -1,4 +1,4 @@
-import {defineRouter, ok, defineRoute, HttpMethod, notFound} from '../dist';
+import {defineRouter, ok, defineRoute, HttpMethod, notFound, fileResponse} from '../dist';
 import type {APIContext} from 'astro';
 import {describe, it, expect, vi} from 'vitest';
 
@@ -135,6 +135,37 @@ describe('defineRouter - basePath handling', () => {
 
         expect(defaultHandler).toHaveBeenCalled();
         expect(json).toEqual({ defaultBase: true });
+    });
+
+    it('should return a file with correct headers and content', async () => {
+        const pdfContent = new Blob([Uint8Array.from([0x25, 0x50, 0x44, 0x46])], {
+            type: 'application/pdf',
+        });
+
+        const fileHandler = vi.fn(() =>
+            fileResponse(pdfContent, 'application/pdf', 'document.pdf')
+        );
+
+        const routes = [defineRoute(HttpMethod.GET, '/download', fileHandler)];
+
+        const router = defineRouter(routes, {basePath: '/api'});
+
+        const mockRequest = new Request('http://localhost/api/download', {
+            method: 'GET',
+        });
+
+        const ctx = {request: mockRequest, params: {}} as unknown as APIContext;
+
+        const response = await router(ctx);
+
+        expect(fileHandler).toHaveBeenCalled();
+        expect(response.status).toBe(200);
+        expect(response.headers.get('Content-Type')).toBe('application/pdf');
+        expect(response.headers.get('Content-Disposition')).toBe(
+            'attachment; filename="document.pdf"'
+        );
+        const buffer = await response.arrayBuffer();
+        expect(new Uint8Array(buffer)).toEqual(Uint8Array.from([0x25, 0x50, 0x44, 0x46]));
     });
 });
 

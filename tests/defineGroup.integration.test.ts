@@ -157,4 +157,25 @@ describe('RouterBuilder + defineGroup - route handling', () => {
         expect(json).toEqual({ group: 'alpha', id: '123' });
     });
 
+    it('should support configuration callback', async () => {
+        const handler = vi.fn(() => ok('Hello'));
+
+        const group = defineGroup('/configured', (g) => {
+            g.addGet('/hello', handler);
+        });
+
+        const router = new RouterBuilder({ basePath: '/api' }).addGroup(group);
+
+        const mockRequest = new Request('http://localhost/api/configured/hello', {
+            method: 'GET',
+        });
+
+        const ctx = { request: mockRequest, params: {} } as unknown as APIContext;
+        const response = await router.build()(ctx);
+        const text = await response.text();
+
+        expect(handler).toHaveBeenCalled();
+        expect(text).toBe('Hello');
+    });
+
 });

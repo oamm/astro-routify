@@ -40,6 +40,28 @@ export const methodNotAllowed = <T = string>(
 export const internalError = (err: unknown, headers?: HeadersInit): ResultResponse<string> =>
     createResponse(500, err instanceof Error ? err.message : String(err), headers);
 
+export const fileResponse = (
+    content: Blob | ArrayBuffer | ReadableStream<Uint8Array>,
+    contentType: string,
+    fileName?: string,
+    headers?: HeadersInit
+): ResultResponse<BodyInit> => {
+    const disposition = fileName
+        ? {'Content-Disposition': `attachment; filename="${fileName}"`}
+        : {};
+
+    return {
+        status: 200,
+        body: content,
+        headers: {
+            'Content-Type': contentType,
+            ...disposition,
+            ...headers,
+        },
+    };
+};
+
+
 export function toAstroResponse(result: ResultResponse | undefined): Response {
     if (!result) return new Response(null, {status: 204});
 

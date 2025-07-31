@@ -1,4 +1,4 @@
-import {defineGroup, HttpMethod} from '../dist';
+import {defineGroup, HttpMethod, ok} from '../dist';
 import {describe, it, expect} from 'vitest';
 
 describe('defineGroup()', () => {
@@ -13,7 +13,7 @@ describe('defineGroup()', () => {
     });
 
     it('should add a GET route with composed path', () => {
-        const group = defineGroup('/users').addGet('/profile', () => new Response('ok'));
+        const group = defineGroup('/users').addGet('/profile', () => ok('ok'));
 
         const routes = group.getRoutes();
         expect(routes).toHaveLength(1);
@@ -22,7 +22,7 @@ describe('defineGroup()', () => {
     });
 
     it('should handle missing slash in subpath', () => {
-        const group = defineGroup('/users').addGet('profile', () => new Response('ok'));
+        const group = defineGroup('/users').addGet('profile', () => ok('ok'));
 
         const route = group.getRoutes()[0];
         expect(route.path).toBe('/users/profile');
@@ -30,11 +30,11 @@ describe('defineGroup()', () => {
 
     it('should support all HTTP methods', () => {
         const group = defineGroup('/test')
-            .addGet('/get', () => new Response('GET'))
-            .addPost('/post', () => new Response('POST'))
-            .addPut('/put', () => new Response('PUT'))
-            .addDelete('/delete', () => new Response('DELETE'))
-            .addPatch('/patch', () => new Response('PATCH'));
+            .addGet('/get', () => ok('GET'))
+            .addPost('/post', () => ok('POST'))
+            .addPut('/put', () => ok('PUT'))
+            .addDelete('/delete', () => ok('DELETE'))
+            .addPatch('/patch', () => ok('PATCH'));
 
         const methods = group.getRoutes().map(r => r.method);
         expect(methods).toContain(HttpMethod.GET);
@@ -43,5 +43,15 @@ describe('defineGroup()', () => {
         expect(methods).toContain(HttpMethod.DELETE);
         expect(methods).toContain(HttpMethod.PATCH);
         expect(group.getRoutes()).toHaveLength(5);
+    });
+
+    it('should support configuration callback', () => {
+        const group = defineGroup('/configured', (g) => {
+            g.addGet('/hello', () => ok('Hello'));
+        });
+
+        const route = group.getRoutes()[0];
+        expect(route.path).toBe('/configured/hello');
+        expect(route.method).toBe(HttpMethod.GET);
     });
 });

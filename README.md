@@ -13,34 +13,44 @@ Define API routes using clean, flat structures — no folders or boilerplate log
 ## Installing
 
 ```shell
-$ npm install astro-routify
+npm install astro-routify
 ```
 
 ## ⚡️ Quickstart
 
 ```ts
 // src/pages/api/index.ts
-import {defineRoute, defineRouter, HttpMethod, ok} from "astro-routify";
+import {
+  defineRoute,
+  defineRouter,
+  defineGroup,
+  HttpMethod,
+  ok,
+} from 'astro-routify';
+
+const userGroup = defineGroup('/users', (group) => {
+  group.addGet('/:id', ({ params }) => ok({ id: params.id }));
+});
 
 export const GET = defineRouter([
-    defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
-    defineRoute(HttpMethod.GET, "/users/:id", ({params}) => ok({id: params.id}))
+  defineRoute(HttpMethod.GET, '/ping', () => ok('pong')),
+  ...userGroup.getRoutes(),
 ]);
 ```
 
 Or to handle everything in a single place:
 
 ```ts
-import {RouterBuilder, defineRoute, HttpMethod, ok} from "astro-routify";
+import { RouterBuilder, ok } from 'astro-routify';
 
 const builder = new RouterBuilder();
-builder.register([
-    defineRoute(HttpMethod.GET, "/ping", () => ok("pong")),
-    defineRoute(HttpMethod.POST, "/submit", async ({request}) => {
-        const body = await request.json();
-        return ok({received: body});
-    })
-]);
+
+builder
+  .addGet('/ping', () => ok('pong'))
+  .addPost('/submit', async ({ request }) => {
+    const body = await request.json();
+    return ok({ received: body });
+  });
 
 export const ALL = builder.build(); // catch-all
 ```
@@ -50,9 +60,10 @@ export const ALL = builder.build(); // catch-all
 You can find an implementation example in the [astro-routify-example](https://github.com/oamm/astro-routify-example) repository.
 It showcases a minimal Astro app with API endpoints configured under:
 
-```shell
-  /src/pages/api/[...path].ts
+```text
+/src/pages/api/[...path].ts
 ```
+
 This setup demonstrates how to route requests dynamically using astro-routify, while still leveraging Astro's native endpoint system.
 
 ---
@@ -60,14 +71,15 @@ This setup demonstrates how to route requests dynamically using astro-routify, w
 ## 🚀 Features
 
 - ⚡ Fully compatible with Astro’s native APIContext — no extra setup needed.
-- 🧩 Use middleware, access cookies, headers, and request bodies exactly as you would in a normal Astro endpoints.
-
+- 🧩 Use middleware, access cookies, headers, and request bodies exactly as you would in a normal Astro endpoint.
 - ✅ Flat-file, code-based routing (no folders required)
 - ✅ Dynamic segments (`:id`)
 - ✅ ALL-mode for monolithic routing (`RouterBuilder`)
 - ✅ Built-in response helpers (`ok`, `created`, etc.)
 - ✅ Trie-based matcher for fast route lookup
 - ✅ Fully typed — no magic strings
+
+> 🔄 See [CHANGELOG.md](./CHANGELOG.md) for recent updates and improvements.
 
 ---
 
@@ -79,7 +91,7 @@ Declare a single route:
 
 ```ts
 defineRoute(HttpMethod.GET, "/users/:id", ({params}) => {
-    return ok({userId: params.id});
+  return ok({userId: params.id});
 });
 ```
 
@@ -89,23 +101,39 @@ Group multiple routes under one HTTP method handler:
 
 ```ts
 export const GET = defineRouter([
-    defineRoute(HttpMethod.GET, "/health", () => ok("ok"))
+  defineRoute(HttpMethod.GET, "/health", () => ok("ok"))
 ]);
 ```
 
 > 🧠 `defineRouter()` supports all HTTP methods — but Astro only executes the method you export (`GET`, `POST`, etc.)
 
-### `RouterBuilder` (Catch-All)
+### `RouterBuilder` (Catch-All & Fluent Builder)
 
-Designed specifically for `ALL`:
+Use `RouterBuilder` when you want to build routes dynamically, catch all HTTP methods via `ALL`, or organize routes more fluently with helpers.
 
 ```ts
 const builder = new RouterBuilder();
-builder.register([
-    defineRoute(HttpMethod.GET, "/info", () => ok({app: "astro-routify"}))
-]);
+
+builder
+  .addGet("/ping", () => ok("pong"))
+  .addPost("/submit", async ({request}) => {
+    const body = await request.json();
+    return ok({received: body});
+  });
+
 export const ALL = builder.build();
 ```
+
+You can also group routes:
+
+```ts
+const users = defineGroup("/users")
+  .addGet("/:id", ({params}) => ok({id: params.id}));
+
+builder.addGroup(users);
+```
+
+> 🔁 While `.register()` is still available, it's **deprecated** in favor of `.addGroup()` and `.addRoute()` for better structure and reusability.
 
 ---
 
@@ -114,11 +142,19 @@ export const ALL = builder.build();
 Avoid boilerplate `new Response(JSON.stringify(...))`:
 
 ```ts
-ok(data);                // 200 OK
-created(data);           // 201 Created
-noContent();             // 204
-notFound("Missing");     // 404
-internalError(err);      // 500
+import {fileResponse} from 'astro-routify';
+
+ok(data);                   // 200 OK
+created(data);              // 201 Created
+noContent();                // 204
+notFound("Missing");        // 404
+internalError(err);         // 500
+```
+
+### File downloads
+
+```ts
+fileResponse(content, "application/pdf", "report.pdf"); // sets Content-Type and Content-Disposition
 ```
 
 ---
@@ -128,9 +164,17 @@ internalError(err);      // 500
 Any route param like `:id` is extracted into `ctx.params`:
 
 ```ts
+const builder = new RouterBuilder();
+
+builder.addGet("/users/:id", ({params}) => ok({userId:  params.id}));
+
+
+//OR
+
 defineRoute(HttpMethod.GET, "/items/:id", ({params}) => {
     return ok({itemId: params.id});
 });
+
 ```
 
 ---
@@ -142,35 +186,33 @@ defineRoute(HttpMethod.GET, "/items/:id", ({params}) => {
 ```ts
 // src/pages/api/[...slug].ts
 export const GET = async ({request}) => {
-    const url = new URL(request.url);
-    const path = url.pathname;
+  const url = new URL(request.url);
+  const path = url.pathname;
 
-    if (path.startsWith('/api/users/')) {
-        // Try to extract ID
-        const id = path.split('/').pop();
-        return new Response(JSON.stringify({id}), {
-            status: 200,
-            headers: {'Content-Type': 'application/json'},
-        });
-    }
+  if (path.startsWith('/api/users/')) {
+    // Try to extract ID
+    const id = path.split('/').pop();
+    return new Response(JSON.stringify({id}), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'},
+    });
+  }
 
-    if (path === '/api/users') {
-        return new Response(JSON.stringify([{id: 1}, {id: 2}]), {
-            status: 200,
-            headers: {'Content-Type': 'application/json'},
-        });
-    }
+  if (path === '/api/users') {
+    return new Response(JSON.stringify([{id: 1}, {id: 2}]), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'},
+    });
+  }
 
+  if (path === '/api/ping') {
+    return new Response(JSON.stringify({pong: true}), {
+      status: 200,
+      headers: {'Content-Type': 'application/json'}
+    });
+  }
 
-    if (path === '/api/ping') {
-        return new Response(JSON.stringify({pong: true}), {
-            status: 200,
-            headers: {'Content-Type': 'application/json'}
-        });
-    }
-
-
-    return new Response('Not Found', {status: 404});
+  return new Response('Not Found', {status: 404});
 };
 ```
 
@@ -190,11 +232,19 @@ src/
 ### ✅ With `astro-routify`
 
 ```ts
-//src/pages/api/[...slug].ts
+// src/pages/api/[...slug].ts
+
+const builder = new RouterBuilder();
+builder.addGet("/ping", () => ok({pong: true}));
+builder.addGet("/users/:id", ({params}) => ok({userId:  params.id}));
+
+// OR
+
 export const ALL = defineRouter([
-    defineRoute(HttpMethod.GET, "/ping", () => ok({pong: true})),
-    defineRoute(HttpMethod.GET, "/users/:id", ({params}) => ok({id: params.id}))
+  defineRoute(HttpMethod.GET, "/ping", () => ok({pong: true})),
+  defineRoute(HttpMethod.GET, "/users/:id", ({params}) => ok({id: params.id}))
 ]);
+
 ```
 
 ---
@@ -245,6 +295,7 @@ Results may vary slightly on different hardware.
 ```
 
 > ⚡ Performance stays consistently fast even with 10k+ routes
+
 ---
 
 ## 🛠 Designed to Scale
