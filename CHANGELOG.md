@@ -4,6 +4,29 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.2.0] - 2025-08-02
+
+### ✨ Added
+
+- `stream()` — Define raw streaming routes with full control over `Content-Type` and chunked output
+- `streamJsonND()` — Send newline-delimited JSON (NDJSON) for real-time progressive responses
+- `streamJsonArray()` — Stream large arrays incrementally with low memory overhead
+- Automatic handling of abort signals and connection termination for streamed responses
+- Internal streaming helpers (`StreamWriter`, `JsonStreamWriter`) provide ergonomic developer APIs
+
+### 🧪 Examples
+
+- `/examples/clock` — Live event stream using `EventSource` (SSE)
+- `/examples/ndjson` — Streaming JSON log entries one at a time
+- `/examples/array` — Streaming full JSON arrays progressively
+
+### ✅ Tests
+
+- Integration tests for:
+  - NDJSON response flow and formatting
+  - JSON array streaming and finalization
+  - Content-Type headers and chunk merging validation
+
 ## [1.1.0] - 2025-07-31
 
 ### ✨ Added

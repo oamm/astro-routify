@@ -1,6 +1,6 @@
 {
   "name": "astro-routify",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A high-performance API router for Astro using a Trie-based matcher.",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,14 +27,21 @@
   },
   "keywords": [
     "astro",
-    "router",
-    "api-router",
-    "typescript",
-    "routing",
     "astrojs",
+    "api-router",
+    "router",
+    "routing",
+    "typescript",
     "esm",
-    "trie"
+    "trie",
+    "streaming",
+    "sse",
+    "ndjson",
+    "json-stream",
+    "response-helpers",
+    "astro-api"
   ],
+
   "author": "Alex Mora",
   "license": "MIT",
   "peerDependencies": {
