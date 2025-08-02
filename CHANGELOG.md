@@ -14,12 +14,6 @@ All notable changes to **astro-routify** will be documented in this file.
 - Automatic handling of abort signals and connection termination for streamed responses
 - Internal streaming helpers (`StreamWriter`, `JsonStreamWriter`) provide ergonomic developer APIs
 
-### 🧪 Examples
-
-- `/examples/clock` — Live event stream using `EventSource` (SSE)
-- `/examples/ndjson` — Streaming JSON log entries one at a time
-- `/examples/array` — Streaming full JSON arrays progressively
-
 ### ✅ Tests
 
 - Integration tests for:
