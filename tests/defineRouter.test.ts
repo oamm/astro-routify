@@ -167,5 +167,30 @@ describe('defineRouter - basePath handling', () => {
         const buffer = await response.arrayBuffer();
         expect(new Uint8Array(buffer)).toEqual(Uint8Array.from([0x25, 0x50, 0x44, 0x46]));
     });
+
+    it('should match both /path and /path/ for the same route', async () => {
+        const handler = vi.fn(() => ok({ matched: true }));
+
+        const routes = [
+            defineRoute(HttpMethod.GET, '/docs', handler),
+        ];
+
+        const router = defineRouter(routes, { basePath: '/api' });
+
+        const request1 = new Request('http://localhost/api/docs', { method: 'GET' });
+        const request2 = new Request('http://localhost/api/docs/', { method: 'GET' });
+
+        const ctx1 = { request: request1, params: {} } as unknown as APIContext;
+        const ctx2 = { request: request2, params: {} } as unknown as APIContext;
+
+        const res1 = await router(ctx1);
+        const res2 = await router(ctx2);
+
+        expect(handler).toHaveBeenCalledTimes(2);
+        expect(await res1.json()).toEqual({ matched: true });
+        expect(await res2.json()).toEqual({ matched: true });
+    });
+
+
 });
 

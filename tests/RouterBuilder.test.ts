@@ -87,7 +87,7 @@ describe('RouterBuilder', () => {
         const route = defineRoute(HttpMethod.GET, '/legacy', dummyHandler);
 
         builder.register(route);
-        builder.register([route]); // call twice to ensure only one warning
+        builder.register([route]);
 
         expect(spy).toHaveBeenCalledOnce();
         spy.mockRestore();
