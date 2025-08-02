@@ -1,6 +1,6 @@
 {
   "name": "astro-routify",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A high-performance API router for Astro using a Trie-based matcher.",
   "type": "module",
   "main": "./dist/index.js",

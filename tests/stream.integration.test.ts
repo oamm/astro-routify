@@ -6,8 +6,8 @@ describe('stream() helper - integration', () => {
     it('streams chunks and closes (SSE by default)', async () => {
 
         const route = stream('/sse', ({response}) => {
-            response.write('data: hello\n\n');
-            response.write('data: world\n\n');
+            response.write('hello');
+            response.write('world');
             response.close();
         });
 

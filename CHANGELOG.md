@@ -4,6 +4,22 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.2.1] – 2025-08-02
+
+### 🛠 Changed
+
+- **`StreamWriter.write(string)` now auto-formats SSE messages**:
+  - When writing string values, `stream()` automatically wraps them as `data: ...\n\n`, per the [Server-Sent Events specification](https://html.spec.whatwg.org/multipage/server-sent-events.html#server-sent-events).
+  - This makes it easier to send valid `EventSource` messages:
+    ```ts
+    response.write('hello'); // now sends: "data: hello\n\n"
+    ```
+
+### ✅ Behavior
+
+- Binary chunks (`Uint8Array`) are passed through unchanged.
+- Developers no longer need to manually format strings with `data:`.
+
 ## [1.2.0] - 2025-08-02
 
 ### ✨ Added

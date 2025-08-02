@@ -95,7 +95,9 @@ export function stream(
         const writer: StreamWriter = {
             write: (chunk) => {
                 if (closed || !controllerRef) return;
-                const bytes = typeof chunk === 'string' ? encoder.encode(chunk) : chunk;
+                const bytes = typeof chunk === 'string' ?
+                    encoder.encode(`data: ${chunk}\n\n`)
+                    : chunk;
                 controllerRef.enqueue(bytes);
             },
             close: () => {

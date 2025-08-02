@@ -86,7 +86,6 @@ endpoint system.
     - `streamJsonArray()` — server-side streamed JSON arrays
 
 > 🔄 See [CHANGELOG.md](./CHANGELOG.md) for recent updates and improvements.
-
 ---
 
 ## 🧠 Core Concepts
@@ -172,7 +171,7 @@ fileResponse(content, "application/pdf", "report.pdf"); // sets Content-Type and
 ```ts
 stream('/clock', async ({response}) => {
     const timer = setInterval(() => {
-        response.write(`data: ${new Date().toISOString()}\n\n`);
+        response.write(new Date().toISOString());
     }, 1000);
 
     setTimeout(() => {
