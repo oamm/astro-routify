@@ -1,4 +1,4 @@
-import { BodyInit, HeadersInit } from 'undici';
+import {BodyInit, HeadersInit} from 'undici';
 
 /**
  * A standardized shape for internal route result objects.
@@ -32,7 +32,7 @@ function createResponse<T>(
     body?: T,
     headers?: HeadersInit
 ): ResultResponse<T> {
-    return { status, body, headers };
+    return {status, body, headers};
 }
 
 /**
@@ -100,6 +100,14 @@ export const methodNotAllowed = <T = string>(
 ) => createResponse(405, body, headers);
 
 /**
+ * 429 Too Many Requests
+ */
+export const tooManyRequests = <T = string>(
+    body: T = 'Too Many Requests' as unknown as T,
+    headers?: HeadersInit
+) => createResponse(429, body, headers);
+
+/**
  * 500 Internal Server Error
  */
 export const internalError = (
@@ -128,7 +136,7 @@ export const fileResponse = (
     headers?: HeadersInit
 ): ResultResponse<BodyInit> => {
     const disposition = fileName
-        ? { 'Content-Disposition': `attachment; filename="${fileName}"` }
+        ? {'Content-Disposition': `attachment; filename="${fileName}"`}
         : {};
 
     return {
@@ -152,18 +160,18 @@ export const fileResponse = (
  * @returns A native Response
  */
 export function toAstroResponse(result: ResultResponse | undefined): Response {
-    if (!result) return new Response(null, { status: 204 });
+    if (!result) return new Response(null, {status: 204});
 
-    const { status, body, headers } = result;
+    const {status, body, headers} = result;
 
     if (body === undefined || body === null) {
-        return new Response(null, { status, headers });
+        return new Response(null, {status, headers});
     }
 
     const isObject = typeof body === 'object' || Array.isArray(body);
     const finalHeaders: HeadersInit = {
         ...(headers ?? {}),
-        ...(isObject ? { 'Content-Type': 'application/json; charset=utf-8' } : {}),
+        ...(isObject ? {'Content-Type': 'application/json; charset=utf-8'} : {}),
     };
 
     return new Response(
