@@ -1,5 +1,5 @@
 import type { APIContext, APIRoute } from 'astro';
-import { internalError, toAstroResponse, type ResultResponse } from './responseHelpers';
+import { internalError, toAstroResponse, isReadableStream, type ResultResponse } from './responseHelpers';
 import { BodyInit } from 'undici';
 
 /**
@@ -80,16 +80,3 @@ export function defineHandler(handler: Handler): APIRoute {
     };
 }
 
-/**
- * Type guard to detect ReadableStreams, used for streamed/binary responses.
- *
- * @param value - Any value to test
- * @returns True if it looks like a ReadableStream
- */
-export function isReadableStream(value: unknown): value is ReadableStream<Uint8Array> {
-    return (
-        typeof value === 'object' &&
-        value !== null &&
-        typeof (value as any).getReader === 'function'
-    );
-}

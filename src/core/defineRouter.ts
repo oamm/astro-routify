@@ -50,18 +50,38 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
         trie.insert(route.path, route.method, route.handler);
     }
 
+    let basePath = options.basePath ?? '/api';
+    if (basePath !== '' && !basePath.startsWith('/')) {
+        basePath = '/' + basePath;
+    }
+    if (basePath.endsWith('/') && basePath !== '/') {
+        basePath = basePath.slice(0, -1);
+    }
+    if (basePath === '/') {
+        basePath = '';
+    }
+
     return async (ctx: APIContext): Promise<Response> => {
-        const pathname = new URL(ctx.request.url).pathname;
+        const url = new URL(ctx.request.url);
+        const pathname = url.pathname;
 
-        let basePath = options.basePath ?? '/api';
-        if (!basePath.startsWith('/')) {
-            basePath = '/' + basePath;
+        let path = pathname;
+        if (basePath !== '') {
+            if (!pathname.startsWith(basePath)) {
+                const notFoundHandler = options.onNotFound ? options.onNotFound() : notFound('Not Found');
+                return toAstroResponse(notFoundHandler);
+            }
+
+            const nextChar = pathname.charAt(basePath.length);
+            if (nextChar !== '' && nextChar !== '/') {
+                const notFoundHandler = options.onNotFound ? options.onNotFound() : notFound('Not Found');
+                return toAstroResponse(notFoundHandler);
+            }
+
+            path = pathname.slice(basePath.length);
         }
-        const basePathRegex = new RegExp(`^${basePath}`);
 
-        const path = pathname.replace(basePathRegex, '');
         const method = normalizeMethod(ctx.request.method);
-
         const { handler, allowed, params } = trie.find(path, method);
 
         if (!handler) {

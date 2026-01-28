@@ -109,16 +109,16 @@ export const tooManyRequests = <T = string>(
 
 /**
  * 500 Internal Server Error
+ *
+ * In production, you might want to avoid leaking error details.
  */
 export const internalError = (
     err: unknown,
     headers?: HeadersInit
-): ResultResponse<string> =>
-    createResponse(
-        500,
-        err instanceof Error ? err.message : String(err),
-        headers
-    );
+): ResultResponse<string> => {
+    const message = err instanceof Error ? err.message : String(err);
+    return createResponse(500, message, headers);
+};
 
 /**
  * Sends a binary or stream-based file response with optional content-disposition.
@@ -135,8 +135,9 @@ export const fileResponse = (
     fileName?: string,
     headers?: HeadersInit
 ): ResultResponse<BodyInit> => {
-    const disposition = fileName
-        ? {'Content-Disposition': `attachment; filename="${fileName}"`}
+    const sanitizedFileName = fileName?.replace(/"/g, '\\"');
+    const disposition = sanitizedFileName
+        ? {'Content-Disposition': `attachment; filename="${sanitizedFileName}"`}
         : {};
 
     return {
@@ -149,6 +150,28 @@ export const fileResponse = (
         },
     };
 };
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+    );
+}
+
+/**
+ * Type guard to detect ReadableStreams, used for streamed/binary responses.
+ *
+ * @param value - Any value to test
+ * @returns True if it looks like a ReadableStream
+ */
+export function isReadableStream(value: unknown): value is ReadableStream<Uint8Array> {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        typeof (value as any).getReader === 'function'
+    );
+}
 
 /**
  * Converts an internal `ResultResponse` into a native `Response` object
@@ -168,14 +191,14 @@ export function toAstroResponse(result: ResultResponse | undefined): Response {
         return new Response(null, {status, headers});
     }
 
-    const isObject = typeof body === 'object' || Array.isArray(body);
+    const isJson = isPlainObject(body) || Array.isArray(body);
     const finalHeaders: HeadersInit = {
         ...(headers ?? {}),
-        ...(isObject ? {'Content-Type': 'application/json; charset=utf-8'} : {}),
+        ...(isJson ? {'Content-Type': 'application/json; charset=utf-8'} : {}),
     };
 
     return new Response(
-        isObject ? JSON.stringify(body) : (body as BodyInit),
+        isJson ? JSON.stringify(body) : (body as BodyInit),
         {
             status,
             headers: finalHeaders,

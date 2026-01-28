@@ -127,16 +127,24 @@ export function createJsonStreamRoute(
             start(controller) {
                 controllerRef = controller;
 
-                ctx.request.signal.addEventListener('abort', () => {
+                const onAbort = () => {
                     closed = true;
-                    controllerRef?.close();
-                });
-
-                Promise.resolve(handler({ ...ctx, response: writer })).catch((err) => {
                     try {
-                        controller.error(err);
+                        controllerRef?.close();
                     } catch { /* noop */ }
-                });
+                };
+
+                ctx.request.signal.addEventListener('abort', onAbort, { once: true });
+
+                Promise.resolve(handler({ ...ctx, response: writer }))
+                    .catch((err) => {
+                        try {
+                            controller.error(err);
+                        } catch { /* noop */ }
+                    })
+                    .finally(() => {
+                        ctx.request.signal.removeEventListener('abort', onAbort);
+                    });
             },
             cancel() {
                 closed = true;

@@ -95,8 +95,8 @@ export function stream(
         const writer: StreamWriter = {
             write: (chunk) => {
                 if (closed || !controllerRef) return;
-                const bytes = typeof chunk === 'string' ?
-                    encoder.encode(`data: ${chunk}\n\n`)
+                const bytes = typeof chunk === 'string'
+                    ? (contentType === 'text/event-stream' ? encoder.encode(`data: ${chunk}\n\n`) : encoder.encode(chunk))
                     : chunk;
                 controllerRef.enqueue(bytes);
             },
@@ -116,18 +116,25 @@ export function stream(
             start(controller) {
                 controllerRef = controller;
 
+                const onAbort = () => {
+                    closed = true;
+                    try {
+                        controller.close();
+                    } catch { /* noop */ }
+                    console.debug('Request aborted — streaming stopped.');
+                };
+
+                ctx.request.signal.addEventListener('abort', onAbort, { once: true });
+
                 Promise.resolve(handler({ ...ctx, response: writer }))
                     .catch((err) => {
                         try {
                             controller.error(err);
                         } catch { /* noop */ }
+                    })
+                    .finally(() => {
+                        ctx.request.signal.removeEventListener('abort', onAbort);
                     });
-
-                ctx.request.signal.addEventListener('abort', () => {
-                    closed = true;
-                    controller.close();
-                    console.debug('Request aborted — streaming stopped.');
-                });
             },
             cancel() {
                 closed = true;

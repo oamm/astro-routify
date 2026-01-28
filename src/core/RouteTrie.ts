@@ -45,7 +45,7 @@ export class RouteTrie {
 	find(path: string, method: HttpMethod): RouteMatch {
 		const segments = this.segmentize(path);
 		let node: TrieNode | undefined = this.root;
-		const params: Record<string, string | undefined> = {};
+		const params: Record<string, string | undefined> = Object.create(null);
 
 		for (const segment of segments) {
 			if (node?.children.has(segment)) {
@@ -69,6 +69,6 @@ export class RouteTrie {
 	}
 
 	private segmentize(path: string): string[] {
-		return path.replace(/(^\/|\/$)/g, '').split('/');
+		return path.split('/').filter(Boolean);
 	}
 }

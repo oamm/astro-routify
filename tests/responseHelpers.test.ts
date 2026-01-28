@@ -10,7 +10,8 @@ import {
     methodNotAllowed,
     internalError,
     fileResponse,
-    toAstroResponse
+    toAstroResponse,
+    isReadableStream
 } from '../dist';
 import {describe, it, expect} from 'vitest';
 
@@ -95,5 +96,29 @@ describe('Response Helpers', () => {
         expect(headers['Content-Type']).toBe('application/pdf');
         expect(headers['Content-Disposition']).toBe('attachment; filename="test.pdf"');
         expect(result.body).toBe(content);
+    });
+
+    describe('isReadableStream', () => {
+        it('should return true for ReadableStream', () => {
+            const stream = new ReadableStream();
+            expect(isReadableStream(stream)).toBe(true);
+        });
+
+        it('should return false for other types', () => {
+            expect(isReadableStream({})).toBe(false);
+            expect(isReadableStream(null)).toBe(false);
+            expect(isReadableStream(undefined)).toBe(false);
+            expect(isReadableStream('string')).toBe(false);
+            expect(isReadableStream(123)).toBe(false);
+            expect(isReadableStream(new Blob())).toBe(false);
+            expect(isReadableStream(new ArrayBuffer(0))).toBe(false);
+        });
+
+        it('should return true for objects that look like ReadableStream', () => {
+            const mockStream = {
+                getReader: () => {}
+            };
+            expect(isReadableStream(mockStream)).toBe(true);
+        });
     });
 });
