@@ -19,6 +19,12 @@ export interface RouterOptions {
      * Custom handler to return when no route is matched (404).
      */
     onNotFound?: () => ReturnType<typeof notFound>;
+
+    /**
+     * If true, enables debug logging for route matching.
+     * Useful during development to trace which route is being matched.
+     */
+    debug?: boolean;
 }
 
 /**
@@ -83,6 +89,14 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
 
         const method = normalizeMethod(ctx.request.method);
         const { handler, allowed, params } = trie.find(path, method);
+
+        if (options.debug) {
+            console.log(
+                `[RouterBuilder] ${method} ${path} -> ${
+                    handler ? 'matched' : allowed && allowed.length ? '405' : '404'
+                }`
+            );
+        }
 
         if (!handler) {
             // Method exists but not allowed for this route

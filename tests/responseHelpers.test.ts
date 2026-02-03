@@ -110,7 +110,7 @@ describe('Response Helpers', () => {
             expect(isReadableStream(undefined)).toBe(false);
             expect(isReadableStream('string')).toBe(false);
             expect(isReadableStream(123)).toBe(false);
-            expect(isReadableStream(new Blob())).toBe(false);
+            expect(isReadableStream(new Blob([]))).toBe(false);
             expect(isReadableStream(new ArrayBuffer(0))).toBe(false);
         });
 

@@ -1,6 +1,7 @@
 import { HttpMethod } from './HttpMethod';
 import { defineRoute, type Route } from './defineRoute';
 import { Handler } from "./defineHandler";
+import { globalRegistry } from './registry';
 
 /**
  * Represents a group of routes under a shared base path.
@@ -85,17 +86,26 @@ export class RouteGroup {
     }
 
     /**
-     * Internal method to register a route under the group with any HTTP method.
-     *
+     * Registers a route under the group's base path.
+     * 
      * @param method - HTTP verb
-     * @param subPath - Route path relative to the base
+     * @param path - Path relative to the base path
      * @param handler - The handler function for this route
+     * @returns The current group instance
      */
-    private add(method: HttpMethod, subPath: string, handler: Handler): this {
-        const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
+    add(method: HttpMethod, path: string, handler: Handler): this {
+        const normalizedPath = path.startsWith('/') ? path : `/${path}`;
         this.routes.push(
             defineRoute(method, `${this.basePath}${normalizedPath}`, handler)
         );
+        return this;
+    }
+
+    /**
+     * Registers the group and all its current routes to the global registry.
+     */
+    register(): this {
+        globalRegistry.register(this);
         return this;
     }
 
@@ -112,17 +122,22 @@ export class RouteGroup {
  *
  * @param basePath - The base path prefix for all routes
  * @param configure - Optional callback to configure the group inline
+ * @param autoRegister - If true, registers the group to the global registry
  *
  * @example
  * const users = defineGroup('/users', (group) => {
  *   group.addGet('/:id', handler);
- * });
+ * }, true);
  */
 export function defineGroup(
     basePath: string,
-    configure?: (group: RouteGroup) => void
+    configure?: (group: RouteGroup) => void,
+    autoRegister?: boolean
 ): RouteGroup {
     const group = new RouteGroup(basePath);
     if (configure) configure(group);
+    if (autoRegister) {
+        globalRegistry.register(group);
+    }
     return group;
 }

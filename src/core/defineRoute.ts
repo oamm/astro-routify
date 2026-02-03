@@ -1,5 +1,6 @@
 import { ALLOWED_HTTP_METHODS, HttpMethod } from './HttpMethod';
 import type { Handler } from './defineHandler';
+import { globalRegistry } from './registry';
 
 /**
  * Represents a single route definition.
@@ -28,9 +29,10 @@ export interface Route {
  * defineRoute({ method: 'GET', path: '/users', handler });
  *
  * @param route - A fully constructed route object
+ * @param autoRegister - If true, registers the route to the global registry
  * @returns The validated Route object
  */
-export function defineRoute(route: Route): Route;
+export function defineRoute(route: Route, autoRegister?: boolean): Route;
 
 /**
  * Defines a route by specifying its method, path, and handler explicitly.
@@ -41,30 +43,41 @@ export function defineRoute(route: Route): Route;
  * @param method - HTTP method to match
  * @param path - Route path (must start with `/`)
  * @param handler - Function to handle the matched request
+ * @param autoRegister - If true, registers the route to the global registry
  * @returns The validated Route object
  */
-export function defineRoute(method: HttpMethod, path: string, handler: Handler): Route;
+export function defineRoute(method: HttpMethod, path: string, handler: Handler, autoRegister?: boolean): Route;
 
 /**
  * Internal route definition logic that supports both overloads.
  */
 export function defineRoute(
 	methodOrRoute: HttpMethod | Route,
-	maybePath?: string,
-	maybeHandler?: Handler
+	maybePathOrAutoRegister?: string | boolean,
+	maybeHandler?: Handler,
+	maybeAutoRegister?: boolean
 ): Route {
+	let autoRegister = false;
+	let route: Route;
+
 	if (typeof methodOrRoute === 'object') {
-		validateRoute(methodOrRoute);
-		return methodOrRoute;
+		route = methodOrRoute;
+		autoRegister = !!maybePathOrAutoRegister;
+	} else {
+		route = {
+			method: methodOrRoute,
+			path: maybePathOrAutoRegister as string,
+			handler: maybeHandler!,
+		};
+		autoRegister = !!maybeAutoRegister;
 	}
 
-	const route: Route = {
-		method: methodOrRoute,
-		path: maybePath!,
-		handler: maybeHandler!,
-	};
-
 	validateRoute(route);
+
+	if (autoRegister) {
+		globalRegistry.register(route);
+	}
+
 	return route;
 }
 
@@ -74,11 +87,27 @@ export function defineRoute(
  * @param route - Route to validate
  * @throws If method is unsupported or path doesn't start with `/`
  */
-function validateRoute({ method, path }: Route) {
+export function validateRoute({ method, path }: Route) {
 	if (!path.startsWith('/')) {
 		throw new Error(`Route path must start with '/': ${path}`);
 	}
 	if (!ALLOWED_HTTP_METHODS.has(method)) {
 		throw new Error(`Unsupported HTTP method in route: ${method}`);
 	}
+}
+
+/**
+ * Checks if an object implements the `Route` interface.
+ *
+ * @param obj - The object to check
+ * @returns True if the object is a valid Route
+ */
+export function isRoute(obj: any): obj is Route {
+    return (
+        obj &&
+        typeof obj === 'object' &&
+        typeof obj.method === 'string' &&
+        typeof obj.path === 'string' &&
+        typeof obj.handler === 'function'
+    );
 }

@@ -130,17 +130,111 @@ builder
 export const ALL = builder.build();
 ```
 
-You can also group routes:
+#### 🏗 Vertical Slices & Auto-Discovery
+
+To avoid a long list of manual registrations, you can use `addModules` combined with Vite's `import.meta.glob`. This allows
+you to define routes anywhere in your project (near your components) and have them automatically registered.
+
+```ts
+// src/pages/api/[...all].ts
+import { RouterBuilder, createRouter } from 'astro-routify';
+
+// 1. Using the builder
+const builder = new RouterBuilder();
+builder.addModules(import.meta.glob('../../**/*.routes.ts', { eager: true }));
+export const ALL = builder.build();
+
+// 2. Or using the one-liner helper
+export const ALL = createRouter(
+    import.meta.glob('../../**/*.routes.ts', { eager: true }),
+    { debug: true } // optional: enable match logging
+);
+```
+
+#### 🛡️ Agnostic Auto-Registration (Global Registry)
+
+If you want to avoid passing glob results or knowing the relative path to your routes, you can use the **global registry**. By setting the `autoRegister` flag or using **decorators**, routes will register themselves as soon as their module is loaded.
+
+##### 1. Enable Auto-Registration in your routes
+
+```ts
+// src/components/User/User.routes.ts
+import { defineRoute, defineGroup, ok, Get } from 'astro-routify';
+
+// Option A: Using the flag
+export const GET_USER = defineRoute('GET', '/users/:id', ({params}) => ok({id: params.id}), true);
+
+// Option B: Using a group flag
+defineGroup('/admin', (g) => {
+    g.addGet('/stats', () => ok({}));
+}, true);
+
+// Option C: Using Decorators (requires experimentalDecorators: true)
+class UserRoutes {
+    @Get('/profile')
+    static getProfile() { return ok({ name: 'Alex' }); }
+}
+```
+
+##### 2. Initialize the router agnostically
+
+In your catch-all endpoint, simply call `import.meta.glob` to trigger the loading of your route files, and then call `createRouter()` without module arguments.
+
+```ts
+// src/pages/api/[...all].ts
+import { createRouter } from 'astro-routify';
+
+// Trigger loading of all route files (agnostic of relative path using /src root alias)
+import.meta.glob('/src/**/*.routes.ts', { eager: true });
+
+// createRouter() will automatically include all auto-registered routes
+export const ALL = createRouter({ debug: true });
+```
+
+You can also use the global `RouterBuilder` instance directly:
+
+```ts
+import { RouterBuilder } from 'astro-routify';
+import.meta.glob('/src/**/*.routes.ts', { eager: true });
+
+export const ALL = RouterBuilder.global.build();
+```
+
+You can also still manually add routes or groups:
 
 ```ts
 const users = defineGroup("/users")
     .addGet("/:id", ({params}) => ok({id: params.id}));
 
 builder.addGroup(users);
+builder.addGet("/ping", () => ok("pong"));
 ```
 
 > 🔁 While `.register()` is still available, it's **deprecated** in favor of `.addGroup()` and `.addRoute()` for better
 > structure and reusability.
+
+Your route files can export single routes, groups, or arrays:
+
+```ts
+// src/components/User/UserList.routes.ts
+import { defineRoute, defineGroup, ok } from 'astro-routify';
+
+export const GET = defineRoute('GET', '/users', () => ok([]));
+
+export const AdminRoutes = defineGroup('/admin')
+    .addPost('/reset', () => ok('done'));
+```
+
+#### 🛠 Development & Debugging
+
+`astro-routify` provides built-in logging to help you see your route table during development.
+
+- **Auto-logging**: In development mode (`NODE_ENV=development`), `RouterBuilder` automatically prints the registered routes to the console when `build()` is called.
+- **Match Tracing**: Set `debug: true` in `RouterOptions` to see a log of every incoming request and which route it matched (or why it failed with 404/405).
+
+```ts
+const router = new RouterBuilder({ debug: true });
+```
 
 ---
 

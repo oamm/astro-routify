@@ -1,8 +1,10 @@
-import {defineRoute, type Route} from './defineRoute';
+import type {APIRoute} from 'astro';
+import {defineRoute, isRoute, type Route} from './defineRoute';
 import {defineRouter, type RouterOptions} from './defineRouter';
 import {RouteGroup} from './defineGroup';
 import {type Handler} from './defineHandler';
 import {HttpMethod} from './HttpMethod';
+import {globalRegistry} from './registry';
 
 /**
  * A fluent builder for creating and composing API routes in Astro.
@@ -29,17 +31,119 @@ import {HttpMethod} from './HttpMethod';
  *
  * export const GET = router.build();
  * ```
+ *
+ * @example Auto-discovering routes via Vite glob:
+ * ```ts
+ * const router = new RouterBuilder()
+ *   .addModules(import.meta.glob('./**\/*.routes.ts', { eager: true }));
+ *
+ * export const ALL = router.build();
+ * ```
  */
 export class RouterBuilder {
     private _options: RouterOptions;
     private _routes: Route[] = [];
+    private _shouldLog = false;
     private static _registerWarned = false;
+
+    /**
+     * A global RouterBuilder instance for easy, centralized route registration.
+     */
+    static readonly global = new RouterBuilder();
 
     constructor(options?: RouterOptions) {
         this._options = {
             basePath: 'api',
             ...options,
         };
+
+        if (
+            (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
+            (import.meta as any).env?.DEV
+        ) {
+            this._shouldLog = true;
+        }
+    }
+
+    /**
+     * Adds all routes and groups that have been auto-registered via `defineRoute(..., true)`
+     * or `defineGroup(..., true)`.
+     *
+     * @returns The current builder instance.
+     */
+    addRegistered(): this {
+        globalRegistry.getItems().forEach((item) => {
+            if (item instanceof RouteGroup) {
+                this.addGroup(item);
+            } else if (isRoute(item)) {
+                this.addRoute(item);
+            }
+        });
+        return this;
+    }
+
+    /**
+     * Bulk registers routes and groups from a module collection.
+     * Ideal for use with Vite's `import.meta.glob` (with `{ eager: true }`).
+     *
+     * It will search for both default and named exports that are either `Route` or `RouteGroup`.
+     *
+     * @param modules A record of modules (e.g. from `import.meta.glob`).
+     * @returns The current builder instance.
+     */
+    addModules(modules: Record<string, any>): this {
+        Object.values(modules).forEach((m) => {
+            if (m instanceof RouteGroup) {
+                this.addGroup(m);
+            } else if (isRoute(m)) {
+                this.addRoute(m);
+            } else if (typeof m === 'object' && m !== null) {
+                Object.values(m).forEach((val) => {
+                    if (val instanceof RouteGroup) {
+                        this.addGroup(val);
+                    } else if (isRoute(val)) {
+                        this.addRoute(val);
+                    } else if (Array.isArray(val)) {
+                        val.forEach((item) => {
+                            if (isRoute(item)) {
+                                this.addRoute(item);
+                            } else if (item instanceof RouteGroup) {
+                                this.addGroup(item);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        return this;
+    }
+
+    /**
+     * Prints all registered routes to the console.
+     * Useful for debugging during development.
+     *
+     * @returns The current builder instance.
+     */
+    logRoutes(): this {
+        console.log(`\x1b[36m[RouterBuilder]\x1b[0m Registered routes:`);
+        const limit = 30;
+        this._routes.slice(0, limit).forEach((r) => {
+            console.log(`  \x1b[32m${r.method.padEnd(7)}\x1b[0m ${r.path}`);
+        });
+        if (this._routes.length > limit) {
+            console.log(`  ... and ${this._routes.length - limit} more`);
+        }
+        return this;
+    }
+
+    /**
+     * Disables the automatic logging of routes that happens in development mode.
+     *
+     * @returns The current builder instance.
+     */
+    disableLogging(): this {
+        this._shouldLog = false;
+        return this;
     }
 
     /**
@@ -181,6 +285,55 @@ export class RouterBuilder {
      * @returns A fully resolved Astro route handler.
      */
     build() {
+        if (this._shouldLog) {
+            this.logRoutes();
+        }
         return defineRouter(this._routes, this._options);
     }
+}
+
+/**
+ * A convenience helper to create a router.
+ *
+ * If modules are provided (e.g. from Vite's `import.meta.glob`), they will be registered.
+ * If no modules are provided, it will automatically include all routes that were
+ * registered via the auto-registration flags (`defineRoute(..., true)`).
+ *
+ * @example Auto-discovery via glob:
+ * ```ts
+ * export const ALL = createRouter(import.meta.glob('./**\/*.ts', { eager: true }));
+ * ```
+ *
+ * @example Auto-registration via global registry:
+ * ```ts
+ * export const ALL = createRouter();
+ * ```
+ *
+ * @param modulesOrOptions Either modules to register or router options.
+ * @param options Router options (if first arg is modules).
+ * @returns An Astro-compatible route handler.
+ */
+export function createRouter(
+    modulesOrOptions?: Record<string, any> | RouterOptions,
+    options?: RouterOptions
+): APIRoute {
+    let modules: Record<string, any> | undefined;
+    let finalOptions: RouterOptions | undefined;
+
+    if (modulesOrOptions && !('basePath' in modulesOrOptions || 'onNotFound' in modulesOrOptions || 'debug' in modulesOrOptions)) {
+        modules = modulesOrOptions as Record<string, any>;
+        finalOptions = options;
+    } else {
+        finalOptions = modulesOrOptions as RouterOptions;
+    }
+
+    const builder = new RouterBuilder(finalOptions);
+
+    if (modules) {
+        builder.addModules(modules);
+    }
+    
+    builder.addRegistered();
+
+    return builder.build();
 }
