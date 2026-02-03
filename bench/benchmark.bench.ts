@@ -1,5 +1,5 @@
 import {describe, bench} from 'vitest';
-import {RouteTrie, HttpMethod, defineHandler} from '../dist';
+import {RouteTrie, HttpMethod, defineHandler} from '../src';
 
 // Prepare a mock handler
 const mockHandler = defineHandler(() => new Response('ok'));
@@ -8,7 +8,11 @@ const mockHandler = defineHandler(() => new Response('ok'));
 function buildTrieWithRoutes(count: number): RouteTrie {
     const trie = new RouteTrie();
     for (let i = 0; i < count; i++) {
-        trie.insert(`/route/${i}`, HttpMethod.GET, mockHandler);
+        trie.insert({
+            path: `/route/${i}`,
+            method: HttpMethod.GET,
+            handler: mockHandler as any
+        });
     }
     return trie;
 }
