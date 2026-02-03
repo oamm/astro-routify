@@ -1,4 +1,4 @@
-import {defineGroup, RouterBuilder, ok, notFound} from '../dist';
+import {defineGroup, RouterBuilder, ok, notFound} from '../src';
 import type {APIContext} from 'astro';
 import {describe, it, expect, vi} from 'vitest';
 

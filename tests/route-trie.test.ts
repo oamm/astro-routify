@@ -59,4 +59,16 @@ describe('RouteTrie', () => {
         expect(trie.find('/action', HttpMethod.POST).route).toBeDefined();
         expect(trie.find('/action', HttpMethod.PUT).route).toBeNull();
     });
+
+    it('handles invalid route objects gracefully', () => {
+        const trie = new RouteTrie();
+        // @ts-ignore
+        expect(() => trie.insert(null)).not.toThrow();
+        // @ts-ignore
+        expect(() => trie.insert({ path: null })).not.toThrow();
+        // @ts-ignore
+        expect(() => trie.insert({ path: 123 })).not.toThrow();
+        // @ts-ignore
+        expect(() => trie.insert("just a string")).not.toThrow();
+    });
 });

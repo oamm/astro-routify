@@ -1,4 +1,4 @@
-import {defineRouter, streamJsonND, streamJsonArray} from '../dist';
+import {defineRouter, streamJsonND, streamJsonArray} from '../src';
 import type {APIContext} from 'astro';
 import {describe, it, expect} from 'vitest';
 

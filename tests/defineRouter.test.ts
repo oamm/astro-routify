@@ -1,4 +1,4 @@
-import {defineRouter, ok, defineRoute, HttpMethod, notFound, fileResponse} from '../dist';
+import {defineRouter, ok, defineRoute, HttpMethod, notFound, fileResponse} from '../src';
 import type {APIContext} from 'astro';
 import {describe, it, expect, vi} from 'vitest';
 

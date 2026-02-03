@@ -1,6 +1,6 @@
 import {describe, it, expect, vi} from 'vitest';
 import type {APIContext} from 'astro';
-import {RouterBuilder, HttpMethod, defineRoute, defineGroup, ok, createRouter} from "../dist";
+import {RouterBuilder, HttpMethod, defineRoute, defineGroup, ok, createRouter} from "../src";
 
 const createContext = (url: string, method: string): APIContext =>
     ({

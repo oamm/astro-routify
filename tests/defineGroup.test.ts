@@ -1,4 +1,4 @@
-import {defineGroup, HttpMethod, ok} from '../dist';
+import {defineGroup, HttpMethod, ok} from '../src';
 import {describe, it, expect} from 'vitest';
 
 describe('defineGroup()', () => {

@@ -1,5 +1,5 @@
 import {describe, bench} from 'vitest';
-import {defineHandler, HttpMethod, RouteTrie} from "../dist";
+import {defineHandler, HttpMethod, RouteTrie} from "../src";
 
 
 // Mock handler
@@ -9,7 +9,11 @@ const mockHandler = defineHandler(() => new Response('ok'));
 function buildStaticTrie(count: number): RouteTrie {
     const trie = new RouteTrie();
     for (let i = 0; i < count; i++) {
-        trie.insert(`/static/page-${i}`, HttpMethod.GET, mockHandler);
+        trie.insert({
+            path: `/static/page-${i}`,
+            method: HttpMethod.GET,
+            handler: mockHandler as any
+        });
     }
     return trie;
 }
@@ -17,12 +21,12 @@ function buildStaticTrie(count: number): RouteTrie {
 // Realistic nested API routes
 function buildRealisticTrie(): RouteTrie {
     const trie = new RouteTrie();
-    trie.insert('/users/:userId', HttpMethod.GET, mockHandler);
-    trie.insert('/users/:userId/settings', HttpMethod.GET, mockHandler);
-    trie.insert('/users/:userId/orders/:orderId', HttpMethod.GET, mockHandler);
-    trie.insert('/blog/:year/:month/:slug', HttpMethod.GET, mockHandler);
-    trie.insert('/admin/dashboard', HttpMethod.GET, mockHandler);
-    trie.insert('/admin/users/:userId/audit', HttpMethod.GET, mockHandler);
+    trie.insert({ path: '/users/:userId', method: HttpMethod.GET, handler: mockHandler as any });
+    trie.insert({ path: '/users/:userId/settings', method: HttpMethod.GET, handler: mockHandler as any });
+    trie.insert({ path: '/users/:userId/orders/:orderId', method: HttpMethod.GET, handler: mockHandler as any });
+    trie.insert({ path: '/blog/:year/:month/:slug', method: HttpMethod.GET, handler: mockHandler as any });
+    trie.insert({ path: '/admin/dashboard', method: HttpMethod.GET, handler: mockHandler as any });
+    trie.insert({ path: '/admin/users/:userId/audit', method: HttpMethod.GET, handler: mockHandler as any });
     return trie;
 }
 

@@ -27,6 +27,9 @@ export class RouteTrie {
 	private readonly root: TrieNode = { children: new Map(), routes: new Map() };
 
 	insert(route: Route): void {
+		if (!route || typeof route.path !== 'string') {
+			return;
+		}
 		const segments = this.segmentize(route.path);
 		let node = this.root;
 
@@ -155,6 +158,7 @@ export class RouteTrie {
 	}
 
 	private segmentize(path: string): string[] {
+		if (typeof path !== 'string') return [];
 		return path.split('/').filter(Boolean);
 	}
 }

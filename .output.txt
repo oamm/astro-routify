@@ -1,256 +1,116 @@
 
  RUN  v3.2.4 D:/Git/astro-routify
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addGet
-[RouterBuilder] Registered routes:
-  GET     /ping
-[astro-routify] → GET /api/ping
- ✓ tests/defineGroup.test.ts (6 tests) 2ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match the route and strip basePath correctly
-[astro-routify] → GET /custom-api/test
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a group route and return correct response
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/users/123
-stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams NDJSON values
-[astro-routify] → GET /api/ndjson
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addGet
-[astro-routify] ← responded 200 in 2ms
-stdout | tests/stream.integration.test.ts > stream() helper - integration > streams chunks and closes (SSE by default)
-[astro-routify] → GET /api/sse
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match the route and strip basePath correctly
-[astro-routify] ← responded 200 in 1ms
-stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams NDJSON values
-[astro-routify] ← responded 200 in 2ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a group route and return correct response
-[astro-routify] ← responded 200 in 1ms
-stdout | tests/stream.integration.test.ts > stream() helper - integration > streams chunks and closes (SSE by default)
-[astro-routify] ← responded 200 in 2ms
-stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams a valid JSON array
-[astro-routify] → GET /api/array
-stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams a valid JSON array
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > handles AbortSignal during NDJSON stream
-[astro-routify] → GET /api/abort
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addPost
-[RouterBuilder] Registered routes:
-  POST    /submit
-[astro-routify] → POST /api/submit
-stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > handles AbortSignal during NDJSON stream
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a nested route
-[astro-routify] → GET /custom-api/v1/items/list
- ✓ tests/stream.integration.test.ts (1 test) 4ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addPost
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a nested route
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 404 for unmatched group route
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/unknown
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 404 for unmatched group route
-[astro-routify] ← responded 404 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should support route groups via addGroup
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/group/test
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should support route groups via addGroup
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should handle dynamic parameters
-[astro-routify] → GET /custom-api/users/42
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 405 for method not allowed in group
-[RouterBuilder] Registered routes:
-[astro-routify] → POST /api/auth/login
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addRoute manually
-[RouterBuilder] Registered routes:
-  GET     /manual
-[astro-routify] → GET /api/manual
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should handle dynamic parameters
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 405 for method not allowed in group
-[astro-routify] ← responded 405 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addRoute manually
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a route with trailing slash
-[astro-routify] → GET /custom-api/trailing/
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a route with trailing slash in group
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/data/sync/
- ✓ tests/responseHelpers.test.ts (14 tests) 5ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a route with trailing slash in group
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a route with trailing slash
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should handle unmatched route as 404
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/unknown
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/users/42
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return notFound for unmatched route
-[astro-routify] → GET /custom-api/does-not-exist
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should handle unmatched route as 404
-[astro-routify] ← responded 404 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return notFound for unmatched route
-[astro-routify] ← responded 404 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
-[RouterBuilder] Registered routes:
-  GET     /route1
-[astro-routify] → GET /api/route1
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
-[astro-routify] → GET /api/posts/hello
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should work with default basePath (/api)
-[astro-routify] → GET /api/hello
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should work with default basePath (/api)
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
-[astro-routify] → GET /api/group1/sub1
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should work with custom notFound handler in builder
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/unknown/path
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return a file with correct headers and content
-[astro-routify] → GET /api/download
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should work with custom notFound handler in builder
-[astro-routify] ← responded 404 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return a file with correct headers and content
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should use createRouter helper
-[RouterBuilder] Registered routes:
-  GET     /auto
-[astro-routify] → GET /api/auto
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract param from group base path
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/section/settings/info
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
-[astro-routify] → GET /api/docs
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should use createRouter helper
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract param from group base path
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract params from both group and route
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/group/alpha/item/123
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
-[astro-routify] → GET /api/docs/
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract params from both group and route
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should support configuration callback
-[RouterBuilder] Registered routes:
-[astro-routify] → GET /api/configured/hello
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should trace matches in debug mode
-[astro-routify] → GET /api/debug
-stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should support configuration callback
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/RouterBuilder.test.ts > RouterBuilder > should trace matches in debug mode
-[astro-routify] ← responded 200 in 0ms
- ✓ tests/defineGroup.integration.test.ts (9 tests) 10ms
- ✓ tests/defineRouter.test.ts (8 tests) 10ms
- ✓ tests/RouterBuilder.test.ts (10 tests) 12ms
-stdout | tests/ErrorHandling.test.ts > Error Handling > should use custom onError handler when provided
-[RouterBuilder] Registered routes:
-  GET     /error
-[astro-routify] → GET /api/error
-stdout | tests/Middleware.test.ts > Middleware System > should execute global middlewares in order
-[RouterBuilder] Registered routes:
-  GET     /test
-[astro-routify] → GET /api/test
 stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
 [RouterBuilder] Registered routes:
   GET     /test
 [astro-routify] → GET /api/test
-stdout | tests/Context.test.ts > RoutifyContext > should provide parsed query parameters in ctx.query
-[RouterBuilder] Registered routes:
-  GET     /search
-[astro-routify] → GET /api/search
- ✓ tests/route-trie.test.ts (6 tests) 2ms
 stdout | tests/ErrorHandling.test.ts > Error Handling > should use custom onError handler when provided
-[astro-routify] ← responded 500 in 1ms
-stdout | tests/Validation.test.ts > Validation Middleware > should accept valid request body
 [RouterBuilder] Registered routes:
-  POST    /user
-[astro-routify] → POST /api/user
+  GET     /error
+[astro-routify] → GET /api/error
 stdout | tests/OpenAPI.test.ts > OpenAPI Generation > should generate valid OpenAPI 3.0 spec with correct path formatting
 [RouterBuilder] Registered routes:
   GET     /users/:id
   POST    /login
   GET     /posts/:postId/comments/:commentId
-stdout | tests/Middleware.test.ts > Middleware System > should execute global middlewares in order
-[astro-routify] ← responded 200 in 1ms
-stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
-[astro-routify] ← responded 200 in 1ms
+stdout | tests/Context.test.ts > RoutifyContext > should provide parsed query parameters in ctx.query
+[RouterBuilder] Registered routes:
+  GET     /search
+[astro-routify] → GET /api/search
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
 [RouterBuilder] Registered routes:
   GET     /files/*/download
 [astro-routify] → GET /api/files/photo/download
+stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
+[astro-routify] ← responded 200 in 1ms
+ ✓ tests/route-trie.test.ts (6 tests) 3ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addGet
+[RouterBuilder] Registered routes:
+  GET     /ping
+[astro-routify] → GET /api/ping
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a group route and return correct response
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/users/123
+stdout | tests/Middleware.test.ts > Middleware System > should execute global middlewares in order
+[RouterBuilder] Registered routes:
+  GET     /test
+[astro-routify] → GET /api/test
 stdout | tests/OpenAPI.test.ts > OpenAPI Generation > should handle regex parameters in OpenAPI paths
 [RouterBuilder] Registered routes:
   GET     /users/:id(\d+)
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
+[astro-routify] ← responded 200 in 1ms
+stdout | tests/Context.test.ts > RoutifyContext > should provide parsed query parameters in ctx.query
+[astro-routify] ← responded 200 in 1ms
+stdout | tests/ErrorHandling.test.ts > Error Handling > should use custom onError handler when provided
+[astro-routify] ← responded 500 in 2ms
+stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
+[RouterBuilder] Registered routes:
+  GET     /test
+  GET     /test
+[astro-routify] → GET /api/test
+stdout | tests/Validation.test.ts > Validation Middleware > should accept valid request body
+[RouterBuilder] Registered routes:
+  POST    /user
+[astro-routify] → POST /api/user
+stdout | tests/stream.integration.test.ts > stream() helper - integration > streams chunks and closes (SSE by default)
+[astro-routify] → GET /api/sse
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match the route and strip basePath correctly
+[astro-routify] → GET /custom-api/test
+stdout | tests/Middleware.test.ts > Middleware System > should execute global middlewares in order
+[astro-routify] ← responded 200 in 1ms
+stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/stream.integration.test.ts > stream() helper - integration > streams chunks and closes (SSE by default)
+[astro-routify] ← responded 200 in 2ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addGet
+[astro-routify] ← responded 200 in 1ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a group route and return correct response
+[astro-routify] ← responded 200 in 1ms
+ ✓ tests/defineGroup.test.ts (6 tests) 3ms
+ ✓ tests/OpenAPI.test.ts (2 tests) 4ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
+[astro-routify] → GET /api/files/video/download
 stdout | tests/Validation.test.ts > Validation Middleware > should accept valid request body
 [astro-routify] ← responded 200 in 2ms
-stdout | tests/Context.test.ts > RoutifyContext > should provide parsed query parameters in ctx.query
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams NDJSON values
+[astro-routify] → GET /api/ndjson
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
+[astro-routify] → GET /api/files/too/many/download
+stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams NDJSON values
 [astro-routify] ← responded 200 in 2ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
+[astro-routify] ← responded 404 in 0ms
 stdout | tests/Middleware.test.ts > Middleware System > should support group-level middlewares
 [RouterBuilder] Registered routes:
   GET     /public
 [astro-routify] → GET /api/admin/dashboard
-stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
+ ✓ tests/stream.integration.test.ts (1 test) 4ms
+stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
 [RouterBuilder] Registered routes:
-  GET     /test
-  GET     /test
-[astro-routify] → GET /api/test
+  GET     /module
+[astro-routify] → GET /api/module
 stdout | tests/Middleware.test.ts > Middleware System > should support group-level middlewares
 [astro-routify] ← responded 200 in 0ms
-stdout | tests/HMR.test.ts > HMR Simulation > should overwrite old handler with new one in global registry (Auto-registration HMR)
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match the route and strip basePath correctly
+[astro-routify] ← responded 200 in 2ms
+stdout | tests/Context.test.ts > RoutifyContext > should provide an empty data object in ctx.data
+[RouterBuilder] Registered routes:
+  GET     /data
+[astro-routify] → GET /api/data
+stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
 [astro-routify] ← responded 200 in 0ms
- ✓ tests/OpenAPI.test.ts (2 tests) 4ms
 stdout | tests/Middleware.test.ts > Middleware System > should support group-level middlewares
 [astro-routify] → GET /api/public
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
-[astro-routify] ← responded 200 in 2ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
+[RouterBuilder] Registered routes:
+  GET     /static/**
+[astro-routify] → GET /api/static/css/main.css
 stdout | tests/Middleware.test.ts > Middleware System > should support group-level middlewares
 [astro-routify] ← responded 200 in 0ms
-stdout | tests/ErrorHandling.test.ts > Error Handling > should fallback to default error handling if no onError is provided
-[RouterBuilder] Registered routes:
-  GET     /error
-[astro-routify] → GET /api/error
-stdout | tests/Validation.test.ts > Validation Middleware > should reject invalid request body with 400
-[RouterBuilder] Registered routes:
-  POST    /user
-[astro-routify] → POST /api/user
-stdout | tests/Middleware.test.ts > Middleware System > should allow middleware to short-circuit the request
-[RouterBuilder] Registered routes:
-  GET     /test
-[astro-routify] → GET /api/test
-stdout | tests/Middleware.test.ts > Middleware System > should allow middleware to short-circuit the request
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
-[RouterBuilder] Registered routes:
-  GET     /module
-[astro-routify] → GET /api/module
-stdout | tests/Validation.test.ts > Validation Middleware > should reject invalid request body with 400
-[astro-routify] ← responded 400 in 0ms
-stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
-[RouterBuilder] Registered routes:
-  GET     /module
-[astro-routify] → GET /api/module
-stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/Validation.test.ts > Validation Middleware > should validate query parameters
-[RouterBuilder] Registered routes:
-  GET     /search
-[astro-routify] → GET /api/search
-stdout | tests/Validation.test.ts > Validation Middleware > should validate query parameters
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
 [RouterBuilder] Registered routes:
@@ -305,83 +165,208 @@ stdout | tests/RequestIndependence.test.ts > Request Independence > should maint
 [astro-routify] → GET /api/users/user-47
 [astro-routify] → GET /api/users/user-48
 [astro-routify] → GET /api/users/user-49
+stdout | tests/Context.test.ts > RoutifyContext > should provide an empty data object in ctx.data
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/ErrorHandling.test.ts > Error Handling > should fallback to default error handling if no onError is provided
+[RouterBuilder] Registered routes:
+  GET     /error
+[astro-routify] → GET /api/error
+stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
+[RouterBuilder] Registered routes:
+  GET     /module
+[astro-routify] → GET /api/module
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
+[astro-routify] → GET /api/static/js/vendor/jquery.js
+stdout | tests/HMR.test.ts > HMR Simulation > should support HMR via addModules (import.meta.glob simulation)
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/Middleware.test.ts > Middleware System > should allow middleware to short-circuit the request
+[RouterBuilder] Registered routes:
+  GET     /test
+[astro-routify] → GET /api/test
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
+[astro-routify] → GET /api/static
+stdout | tests/Middleware.test.ts > Middleware System > should allow middleware to short-circuit the request
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/Validation.test.ts > Validation Middleware > should reject invalid request body with 400
+[RouterBuilder] Registered routes:
+  POST    /user
+[astro-routify] → POST /api/user
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 404 for unmatched group route
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/unknown
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addPost
+[RouterBuilder] Registered routes:
+  POST    /submit
+[astro-routify] → POST /api/submit
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 404 for unmatched group route
+[astro-routify] ← responded 404 in 0ms
+stdout | tests/Validation.test.ts > Validation Middleware > should reject invalid request body with 400
+[astro-routify] ← responded 400 in 0ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
+[RouterBuilder] Registered routes:
+  GET     /files/config/download
+  GET     /files/*/download
+[astro-routify] → GET /api/files/config/download
 stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
 [RouterBuilder] Registered routes:
   GET     /keep
   GET     /change
 [astro-routify] → GET /api/keep
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
-[astro-routify] → GET /api/files/video/download
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams a valid JSON array
+[astro-routify] → GET /api/array
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addPost
+[astro-routify] ← responded 200 in 0ms
+ ✓ tests/responseHelpers.test.ts (14 tests) 6ms
 stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > streams a valid JSON array
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
+[astro-routify] → GET /api/files/other/download
+ ✓ tests/Context.test.ts (2 tests) 6ms
+stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
+[astro-routify] → GET /api/change
+stdout | tests/Validation.test.ts > Validation Middleware > should validate query parameters
+[RouterBuilder] Registered routes:
+  GET     /search
+[astro-routify] → GET /api/search
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 405 for method not allowed in group
+[RouterBuilder] Registered routes:
+[astro-routify] → POST /api/auth/login
+stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/Validation.test.ts > Validation Middleware > should validate query parameters
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should return 405 for method not allowed in group
+[astro-routify] ← responded 405 in 0ms
+stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
+[RouterBuilder] Registered routes:
+  GET     /keep
+  GET     /change
+  GET     /change
+[astro-routify] → GET /api/keep
+stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > handles AbortSignal during NDJSON stream
+[astro-routify] → GET /api/abort
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 3ms
+stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > handles AbortSignal during NDJSON stream
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/Validation.test.ts > Validation Middleware > should validate query parameters
 [astro-routify] → GET /api/search
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
-[astro-routify] → GET /api/change
 stdout | tests/Validation.test.ts > Validation Middleware > should validate query parameters
 [astro-routify] ← responded 400 in 0ms
-stdout | tests/Context.test.ts > RoutifyContext > should provide an empty data object in ctx.data
-[RouterBuilder] Registered routes:
-  GET     /data
-[astro-routify] → GET /api/data
-stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
-[astro-routify] ← responded 200 in 0ms
  ✓ tests/Middleware.test.ts (3 tests) 6ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
-[astro-routify] → GET /api/files/too/many/download
-stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a route with trailing slash in group
 [RouterBuilder] Registered routes:
-  GET     /keep
-  GET     /change
-  GET     /change
-[astro-routify] → GET /api/keep
-stdout | tests/Context.test.ts > RoutifyContext > should provide an empty data object in ctx.data
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match single segment wildcard (*)
-[astro-routify] ← responded 404 in 0ms
-stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
-[astro-routify] ← responded 200 in 0ms
+[astro-routify] → GET /api/data/sync/
 stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
 [astro-routify] → GET /api/change
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should support route groups via addGroup
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/group/test
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a nested route
+[astro-routify] → GET /custom-api/v1/items/list
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
+[RouterBuilder] Registered routes:
+  GET     /users/:id(\d+)
+[astro-routify] → GET /api/users/123
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match a route with trailing slash in group
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/HMR.test.ts > HMR Simulation > should maintain other routes during HMR
 [astro-routify] ← responded 200 in 0ms
- ✓ tests/Validation.test.ts (3 tests) 6ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should support route groups via addGroup
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a nested route
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
 [RouterBuilder] Registered routes:
   GET     /a
   GET     /b
 [astro-routify] → GET /api/a
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
-[RouterBuilder] Registered routes:
-  GET     /static/**
-[astro-routify] → GET /api/static/css/main.css
 stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
 [astro-routify] ← responded 200 in 0ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/users/42
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addRoute manually
+[RouterBuilder] Registered routes:
+  GET     /manual
+[astro-routify] → GET /api/manual
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
+[astro-routify] → GET /api/users/abc
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should handle dynamic parameters
+[astro-routify] → GET /custom-api/users/42
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
+[astro-routify] ← responded 404 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
 [astro-routify] → GET /api/b
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
-[astro-routify] → GET /api/static/js/vendor/jquery.js
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should build and route with addRoute manually
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
+[astro-routify] → GET /api/posts/hello
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should handle dynamic parameters
+[astro-routify] ← responded 200 in 0ms
+ ✓ tests/Validation.test.ts (3 tests) 7ms
 stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should match multiple groups and route to correct handler
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
-[astro-routify] ← responded 200 in 0ms
- ✓ tests/Context.test.ts (2 tests) 7ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
-[astro-routify] → GET /api/static
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should match catch-all wildcard (**)
-[astro-routify] ← responded 200 in 0ms
+[astro-routify] ← responded 200 in 3ms
 stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
 [RouterBuilder] Registered routes:
   GET     /a
   GET     /a
   GET     /b
 [astro-routify] → GET /api/a
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 4ms
+stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
+[RouterBuilder] Registered routes:
+  GET     /color/:hex(^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$)
+[astro-routify] → GET /api/color/ff0000
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should handle unmatched route as 404
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/unknown
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a route with trailing slash
+[astro-routify] → GET /custom-api/trailing/
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should handle unmatched route as 404
+[astro-routify] ← responded 404 in 0ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
+[astro-routify] → GET /api/b
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should work with custom notFound handler in builder
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/unknown/path
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match a route with trailing slash
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should work with custom notFound handler in builder
+[astro-routify] ← responded 404 in 0ms
+stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 3ms
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
+[astro-routify] → GET /api/color/fff
+stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
+[astro-routify] ← responded 200 in 0ms
 stderr | tests/ErrorHandling.test.ts > Error Handling > should fallback to default error handling if no onError is provided
 [astro-routify] handler error Error: Default Error
     at Object.handler (D:\Git\astro-routify\tests\ErrorHandling.test.ts:35:19)
@@ -394,75 +379,21 @@ stderr | tests/ErrorHandling.test.ts > Error Handling > should fallback to defau
     at file:///D:/Git/astro-routify/node_modules/.pnpm/@vitest+runner@3.2.4/node_modules/@vitest/runner/dist/chunk-hooks.js:1897:20
     at new Promise (<anonymous>)
     at runWithTimeout (file:///D:/Git/astro-routify/node_modules/.pnpm/@vitest+runner@3.2.4/node_modules/@vitest/runner/dist/chunk-hooks.js:1863:10)
-stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/ErrorHandling.test.ts > Error Handling > should fallback to default error handling if no onError is provided
-[astro-routify] ← responded 500 in 3ms
-stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
-[astro-routify] → GET /api/b
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
-[RouterBuilder] Registered routes:
-  GET     /files/config/download
-  GET     /files/*/download
-[astro-routify] → GET /api/files/config/download
-stdout | tests/HMR.test.ts > HMR Simulation > should handle complex mixed registration HMR
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
-[astro-routify] → GET /api/files/other/download
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Wildcards > should prioritize more specific routes over wildcards
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
- ✓ tests/ErrorHandling.test.ts (2 tests) 8ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
-[RouterBuilder] Registered routes:
-  GET     /users/:id(\d+)
-[astro-routify] → GET /api/users/123
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
- ✓ tests/HMR.test.ts (4 tests) 8ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
-[astro-routify] → GET /api/users/abc
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should match regex-constrained parameters
-[astro-routify] ← responded 404 in 0ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
-[RouterBuilder] Registered routes:
-  GET     /color/:hex(^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$)
-[astro-routify] → GET /api/color/ff0000
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 4ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
-[astro-routify] ← responded 200 in 0ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
-[astro-routify] → GET /api/color/fff
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 5ms
-stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
-[astro-routify] ← responded 200 in 0ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
 [astro-routify] → GET /api/color/red
+stdout | tests/ErrorHandling.test.ts > Error Handling > should fallback to default error handling if no onError is provided
+[astro-routify] ← responded 500 in 3ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Regex Constraints > should handle complex regex
 [astro-routify] ← responded 404 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 5ms
+[astro-routify] ← responded 200 in 4ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract param from group base path
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/section/settings/info
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract param from group base path
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
+[astro-routify] ← responded 200 in 4ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [RouterBuilder] Registered routes:
   GET     /p/static
@@ -471,138 +402,208 @@ stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > 
   GET     /p/*
   GET     /**
 [astro-routify] → GET /api/p/static
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
+[RouterBuilder] Registered routes:
+  GET     /route1
+[astro-routify] → GET /api/route1
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return notFound for unmatched route
+[astro-routify] → GET /custom-api/does-not-exist
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 7ms
+[astro-routify] ← responded 200 in 4ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] → GET /api/p/123
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 7ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return notFound for unmatched route
+[astro-routify] ← responded 404 in 0ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] ← responded 200 in 0ms
+ ✓ tests/ErrorHandling.test.ts (2 tests) 9ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract params from both group and route
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/group/alpha/item/123
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
+[astro-routify] → GET /api/group1/sub1
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] → GET /api/p/abc
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
+ ✓ tests/HMR.test.ts (4 tests) 9ms
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should extract params from both group and route
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should register routes from modules using addModules
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 6ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 7ms
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should use createRouter helper
+[RouterBuilder] Registered routes:
+  GET     /auto
+[astro-routify] → GET /api/auto
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should support configuration callback
+[RouterBuilder] Registered routes:
+[astro-routify] → GET /api/configured/hello
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] → GET /api/something/else
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should use createRouter helper
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Priority Matching > should follow priority: Static > Regex > Param > Wildcard > Catch-all
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should work with default basePath (/api)
+[astro-routify] → GET /api/hello
+stdout | tests/defineGroup.integration.test.ts > RouterBuilder + defineGroup - route handling > should support configuration callback
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should work with default basePath (/api)
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle multiple regex params in one path
 [RouterBuilder] Registered routes:
   GET     /v1/:year(\d{4})/:month(\d{2})
 [astro-routify] → GET /api/v1/2024/05
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle multiple regex params in one path
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 5ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 7ms
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should trace matches in debug mode
+[astro-routify] → GET /api/debug
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 5ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return a file with correct headers and content
+[astro-routify] → GET /api/download
+stdout | tests/RouterBuilder.test.ts > RouterBuilder > should trace matches in debug mode
+[astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle multiple regex params in one path
 [astro-routify] → GET /api/v1/2024/may
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should return a file with correct headers and content
+[astro-routify] ← responded 200 in 0ms
+ ✓ tests/defineGroup.integration.test.ts (9 tests) 10ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle multiple regex params in one path
 [astro-routify] ← responded 404 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 8ms
-stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 9ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle wildcards in the middle of a path
 [RouterBuilder] Registered routes:
   GET     /a/*/c
 [astro-routify] → GET /api/a/b/c
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 9ms
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle wildcards in the middle of a path
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 9ms
+[astro-routify] ← responded 200 in 6ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 6ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle wildcards in the middle of a path
 [astro-routify] → GET /api/a/foo/c
 stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
-[astro-routify] ← responded 200 in 9ms
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle wildcards in the middle of a path
 [astro-routify] ← responded 200 in 0ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle wildcards in the middle of a path
 [astro-routify] → GET /api/a/b/d
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should handle wildcards in the middle of a path
 [astro-routify] ← responded 404 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
+[astro-routify] → GET /api/docs
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should allow mixing * and **
 [RouterBuilder] Registered routes:
   GET     /api/*/static/**
 [astro-routify] → GET /api/api/v1/static/css/style.css
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should allow mixing * and **
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
+[astro-routify] → GET /api/docs/
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should allow mixing * and **
 [astro-routify] → GET /api/api/v2/static
+stdout | tests/defineRouter.test.ts > defineRouter - basePath handling > should match both /path and /path/ for the same route
+[astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should allow mixing * and **
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 7ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should match catch-all with zero segments
 [RouterBuilder] Registered routes:
   GET     /docs/**
 [astro-routify] → GET /api/docs
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should match catch-all with zero segments
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+ ✓ tests/RouterBuilder.test.ts (10 tests) 11ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should match catch-all with zero segments
 [astro-routify] → GET /api/docs/
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
 stdout | tests/AdvancedRouting.test.ts > Advanced Routing > Edge Cases > should match catch-all with zero segments
 [astro-routify] ← responded 200 in 0ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+ ✓ tests/defineRouter.test.ts (8 tests) 12ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 8ms
+stdout | tests/RequestIndependence.test.ts > Request Independence > should maintain independent params for concurrent requests
+[astro-routify] ← responded 200 in 9ms
+ ✓ tests/AdvancedRouting.test.ts (10 tests) 13ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should not leak ctx.params between different routes
 [RouterBuilder] Registered routes:
   GET     /a/:id
@@ -643,7 +644,6 @@ stdout | tests/RequestIndependence.test.ts > Request Independence > should not m
 [astro-routify] → GET /api/headers/val-17
 [astro-routify] → GET /api/headers/val-18
 [astro-routify] → GET /api/headers/val-19
- ✓ tests/AdvancedRouting.test.ts (10 tests) 15ms
 stdout | tests/RequestIndependence.test.ts > Request Independence > should not mix response headers between concurrent requests
 [astro-routify] ← responded 200 in 1ms
 [astro-routify] ← responded 200 in 1ms
@@ -651,7 +651,7 @@ stdout | tests/RequestIndependence.test.ts > Request Independence > should not m
 [astro-routify] ← responded 200 in 1ms
 [astro-routify] ← responded 200 in 1ms
 [astro-routify] ← responded 200 in 1ms
-[astro-routify] ← responded 200 in 0ms
+[astro-routify] ← responded 200 in 1ms
 [astro-routify] ← responded 200 in 0ms
 [astro-routify] ← responded 200 in 0ms
 [astro-routify] ← responded 200 in 0ms
@@ -693,8 +693,8 @@ stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integ
 [astro-routify] → GET /api/nested/deep/stream
 stdout | tests/streamJson.integration.test.ts > streamJson split helpers - integration > supports nested routes (e.g. /nested/deep/stream)
 [astro-routify] ← responded 200 in 0ms
- ✓ tests/streamJson.integration.test.ts (6 tests) 120ms
+ ✓ tests/streamJson.integration.test.ts (6 tests) 110ms
  Test Files  16 passed (16)
       Tests  91 passed (91)
-   Start at  00:11:19
-   Duration  794ms (transform 911ms, setup 0ms, collect 3.81s, tests 239ms, environment 2ms, prepare 2.62s)
+   Start at  00:26:32
+   Duration  827ms (transform 903ms, setup 0ms, collect 3.96s, tests 233ms, environment 2ms, prepare 2.69s)

@@ -1,4 +1,4 @@
-import {defineRouter, stream} from '../dist';
+import {defineRouter, stream} from '../src';
 import type {APIContext} from 'astro';
 import {describe, it, expect} from 'vitest';
 

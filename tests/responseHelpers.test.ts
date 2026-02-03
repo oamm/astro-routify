@@ -12,7 +12,7 @@ import {
     fileResponse,
     toAstroResponse,
     isReadableStream
-} from '../dist';
+} from '../src';
 import {describe, it, expect} from 'vitest';
 
 describe('Response Helpers', () => {
