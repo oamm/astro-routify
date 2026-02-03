@@ -7,11 +7,15 @@ interface RegexChild {
 	paramName: string;
 }
 
+interface ParamChild {
+    paramName: string;
+    node: TrieNode;
+}
+
 interface TrieNode {
 	children: Map<string, TrieNode>;
 	regexChildren?: RegexChild[];
-	paramChild?: TrieNode;
-	paramName?: string;
+	paramChildren?: ParamChild[];
 	wildcardChild?: TrieNode;
 	catchAllChild?: TrieNode;
 	routes: Map<HttpMethod, Route>;
@@ -63,14 +67,20 @@ export class RouteTrie {
 							paramName,
 							node: regexNode,
 						});
+                        // Sort regex by specificity (longer source first)
+                        node.regexChildren.sort((a, b) => b.regex.source.length - a.regex.source.length);
 					}
 					node = regexNode;
 				} else {
 					const paramName = segment.slice(1);
-					if (!node.paramChild) {
-						node.paramChild = { children: new Map(), routes: new Map(), paramName };
-					}
-					node = node.paramChild;
+					if (!node.paramChildren) node.paramChildren = [];
+                    
+                    let paramNode = node.paramChildren.find(p => p.paramName === paramName)?.node;
+                    if (!paramNode) {
+                        paramNode = { children: new Map(), routes: new Map() };
+                        node.paramChildren.push({ paramName, node: paramNode });
+                    }
+					node = paramNode;
 				}
 			} else {
 				if (!node.children.has(segment)) {
@@ -102,6 +112,7 @@ export class RouteTrie {
 			if (!route && node.catchAllChild) {
 				route = node.catchAllChild.routes.get(method) ?? null;
 				allowed = route ? undefined : [...node.catchAllChild.routes.keys()];
+                return { route, allowed, params: { '*': '' } };
 			}
 
 			return { route, allowed, params: {} };
@@ -130,12 +141,14 @@ export class RouteTrie {
 		}
 
 		// 3. Param Match
-		if (node.paramChild) {
-			const match = this.matchNode(node.paramChild, segments, index + 1, method);
-			if (match.route || (match.allowed && match.allowed.length > 0)) {
-				match.params[node.paramChild.paramName!] = segment;
-				return match;
-			}
+		if (node.paramChildren) {
+			for (const pc of node.paramChildren) {
+                const match = this.matchNode(pc.node, segments, index + 1, method);
+                if (match.route || (match.allowed && match.allowed.length > 0)) {
+                    match.params[pc.paramName] = segment;
+                    return match;
+                }
+            }
 		}
 
 		// 4. Wildcard Match (*)
@@ -147,10 +160,14 @@ export class RouteTrie {
 		// 5. Catch-all Match (**)
 		if (node.catchAllChild) {
 			const route = node.catchAllChild.routes.get(method) ?? null;
+            const params: Record<string, string | undefined> = {};
+            // Capture the rest of the path
+            params['*'] = segments.slice(index).join('/');
+            
 			return {
 				route,
 				allowed: route ? undefined : [...node.catchAllChild.routes.keys()],
-				params: {},
+				params,
 			};
 		}
 

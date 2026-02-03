@@ -4,7 +4,6 @@
  * This allows routes to be defined anywhere in the project and automatically 
  * picked up by the router.
  */
-
 export class InternalRegistry {
     private static instance: InternalRegistry;
     private items: any[] = [];

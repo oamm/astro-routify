@@ -104,6 +104,9 @@ export function validateRoute({ method, path }: Route) {
 	if (!ALLOWED_HTTP_METHODS.has(method)) {
 		throw new Error(`Unsupported HTTP method in route: ${method}`);
 	}
+    if (path.includes('**') && !path.endsWith('**')) {
+        throw new Error(`Catch-all '**' is only allowed at the end of a path: ${path}`);
+    }
 }
 
 /**

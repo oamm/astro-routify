@@ -98,13 +98,35 @@ export class RouterBuilder {
      * @returns The current builder instance.
      */
     addRegistered(): this {
-        globalRegistry.getItems().forEach((item) => {
-            if (item instanceof RouteGroup) {
-                this.addGroup(item);
+        const items = globalRegistry.getItems();
+
+        const lastRouteIndex = new Map<string, number>();
+        const routesByKey = new Map<string, Route>();
+        const lastGroupIndex = new Map<string, number>();
+        const groupsByKey = new Map<string, RouteGroup>();
+
+        items.forEach((item, index) => {
+            if (item && typeof item === 'object' && item.constructor?.name === 'RouteGroup') {
+                const key = (item as RouteGroup).getBasePath();
+                lastGroupIndex.set(key, index);
+                groupsByKey.set(key, item as RouteGroup);
             } else if (isRoute(item)) {
-                this.addRoute(item);
+                const key = `${item.method}:${item.path}`;
+                lastRouteIndex.set(key, index);
+                routesByKey.set(key, item);
             }
         });
+
+        items.forEach((item, index) => {
+            if (item && typeof item === 'object' && item.constructor?.name === 'RouteGroup') {
+                const key = (item as RouteGroup).getBasePath();
+                if (lastGroupIndex.get(key) === index) this.addGroup(groupsByKey.get(key)!);
+            } else if (isRoute(item)) {
+                const key = `${item.method}:${item.path}`;
+                if (lastRouteIndex.get(key) === index) this.addRoute(routesByKey.get(key)!);
+            }
+        });
+
         return this;
     }
 
@@ -118,14 +140,15 @@ export class RouterBuilder {
      * @returns The current builder instance.
      */
     addModules(modules: Record<string, any>): this {
-        Object.values(modules).forEach((m) => {
-            if (m instanceof RouteGroup) {
+        Object.keys(modules).sort().forEach((key) => {
+            const m = modules[key];
+            if (m && typeof m === 'object' && m.constructor?.name === 'RouteGroup') {
                 this.addGroup(m);
             } else if (isRoute(m)) {
                 this.addRoute(m);
             } else if (typeof m === 'object' && m !== null) {
                 Object.values(m).forEach((val) => {
-                    if (val instanceof RouteGroup) {
+                    if (val && typeof val === 'object' && val.constructor?.name === 'RouteGroup') {
                         this.addGroup(val);
                     } else if (isRoute(val)) {
                         this.addRoute(val);
@@ -133,7 +156,7 @@ export class RouterBuilder {
                         val.forEach((item) => {
                             if (isRoute(item)) {
                                 this.addRoute(item);
-                            } else if (item instanceof RouteGroup) {
+                            } else if (item && typeof item === 'object' && item.constructor?.name === 'RouteGroup') {
                                 this.addGroup(item);
                             }
                         });

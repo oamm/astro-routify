@@ -1,6 +1,22 @@
 import {BodyInit, HeadersInit} from 'undici';
 
 /**
+ * Supported types that can be returned from a route handler.
+ */
+export type HandlerResult =
+    | Response
+    | ResultResponse
+    | string
+    | number
+    | boolean
+    | object
+    | ArrayBuffer
+    | Uint8Array
+    | ReadableStream<Uint8Array>
+    | null
+    | undefined;
+
+/**
  * A standardized shape for internal route result objects.
  * These are later converted into native `Response` instances.
  */
@@ -183,34 +199,85 @@ export function isReadableStream(value: unknown): value is ReadableStream<Uint8A
 }
 
 /**
- * Converts an internal `ResultResponse` into a native `Response` object
+ * Converts an internal `ResultResponse` or any `HandlerResult` into a native `Response` object
  * for use inside Astro API routes.
  *
- * Automatically applies `Content-Type: application/json` for object bodies.
+ * Automatically applies appropriate Content-Type headers.
  *
- * @param result - A ResultResponse returned from route handler
+ * @param result - A ResultResponse or other supported type returned from route handler
  * @returns A native Response
  */
-export function toAstroResponse(result: ResultResponse | undefined): Response {
-    if (!result) return new Response(null, {status: 204});
-
-    const {status, body, headers} = result;
-
-    if (body === undefined || body === null) {
-        return new Response(null, {status, headers});
+export function toAstroResponse(result: HandlerResult): Response {
+    if (result instanceof Response) return result;
+    
+    if (result === undefined || result === null) {
+        return new Response(null, { status: 204 });
     }
 
-    const isJson = isPlainObject(body) || Array.isArray(body);
-    const finalHeaders: HeadersInit = {
-        ...(headers ?? {}),
-        ...(isJson ? {'Content-Type': 'application/json; charset=utf-8'} : {}),
-    };
+    // If it's a ResultResponse object (has status)
+    if (typeof result === 'object' && 'status' in result && typeof (result as any).status === 'number') {
+        const { status, body, headers } = result as ResultResponse;
 
-    return new Response(
-        isJson ? JSON.stringify(body) : (body as BodyInit),
-        {
-            status,
-            headers: finalHeaders,
+        if (body === undefined || body === null) {
+            return new Response(null, { status, headers });
         }
-    );
+
+        if (body instanceof Response) return body;
+
+        const isJson = isPlainObject(body) || Array.isArray(body);
+        const finalHeaders: HeadersInit = {
+            ...(headers ?? {}),
+            ...(isJson && !getHeader(headers, 'Content-Type') ? { 'Content-Type': 'application/json; charset=utf-8' } : {}),
+        };
+
+        return new Response(
+            isJson ? JSON.stringify(body) : (body as BodyInit),
+            {
+                status,
+                headers: finalHeaders,
+            }
+        );
+    }
+
+    // Direct values
+    if (typeof result === 'string') {
+        return new Response(result, {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+    }
+
+    if (typeof result === 'number' || typeof result === 'boolean') {
+        return new Response(String(result), {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+    }
+
+    if (result instanceof ArrayBuffer || result instanceof Uint8Array || isReadableStream(result)) {
+        return new Response(result as BodyInit, { status: 200 });
+    }
+
+    if (Array.isArray(result) || isPlainObject(result)) {
+        return new Response(JSON.stringify(result), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+        });
+    }
+
+    return new Response(null, { status: 204 });
+}
+
+/**
+ * Helper to extract a header value from HeadersInit.
+ */
+function getHeader(headers: HeadersInit | undefined, name: string): string | null {
+    if (!headers) return null;
+    if (headers instanceof Headers) return headers.get(name);
+    if (Array.isArray(headers)) {
+        const found = headers.find(([k]) => k.toLowerCase() === name.toLowerCase());
+        return found ? found[1] : null;
+    }
+    const key = Object.keys(headers).find(k => k.toLowerCase() === name.toLowerCase());
+    return key ? (headers as any)[key] : null;
 }

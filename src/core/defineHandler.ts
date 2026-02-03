@@ -1,11 +1,10 @@
 import type { APIContext, APIRoute } from 'astro';
-import { internalError, toAstroResponse, isReadableStream, type ResultResponse } from './responseHelpers';
-import { BodyInit } from 'undici';
+import { internalError, toAstroResponse, type HandlerResult } from './responseHelpers';
 
 /**
  * Enhanced Astro context for Routify.
  */
-export interface RoutifyContext extends APIContext {
+export interface RoutifyContext<State = Record<string, any>> extends APIContext {
     /**
      * Parsed query parameters from the URL.
      */
@@ -13,27 +12,25 @@ export interface RoutifyContext extends APIContext {
 
     /**
      * Shared data container for middlewares and handlers (e.g., validation results).
+     * This is where middlewares can store information for subsequent handlers.
      */
-    data: Record<string, any>;
+    data: State;
 }
 
 /**
  * A middleware function that can modify the context or short-circuit the response.
  */
-export type Middleware = (
-    ctx: RoutifyContext,
+export type Middleware<State = any> = (
+    ctx: RoutifyContext<State>,
     next: () => Promise<Response>
 ) => Promise<Response> | Response;
 
 /**
- * A flexible route handler that can return:
- * - a native `Response` object,
- * - a structured `ResultResponse` object,
- * - or a file stream (Blob, ArrayBuffer, or ReadableStream).
+ * A flexible route handler that can return various types.
  */
-export type Handler = (
-    ctx: RoutifyContext
-) => Promise<ResultResponse | Response> | ResultResponse | Response;
+export type Handler<State = any> = (
+    ctx: RoutifyContext<State>
+) => Promise<HandlerResult> | HandlerResult;
 
 /**
  * Logs the incoming request method and path to the console.
@@ -76,21 +73,7 @@ export function defineHandler(handler: Handler): APIRoute {
                 return result;
             }
 
-            // Direct binary or stream body (file download, etc.)
-            if (
-                result?.body instanceof Blob ||
-                result?.body instanceof ArrayBuffer ||
-                isReadableStream(result?.body)
-            ) {
-                const res = new Response(result.body as BodyInit, {
-                    status: result.status,
-                    headers: result.headers,
-                });
-                logResponse(res.status, start);
-                return res;
-            }
-
-            // Structured ResultResponse → native Astro Response
+            // Structured ResultResponse or other HandlerResult → native Astro Response
             const finalResponse = toAstroResponse(result);
             logResponse(finalResponse.status, start);
             return finalResponse;
