@@ -143,13 +143,13 @@ export class RouterBuilder {
         Object.keys(modules).sort().forEach((key) => {
             const m = modules[key];
             if (m && typeof m === 'object' && (m as any)._routifyType === 'group') {
-                this.addGroup(m);
+                this.addGroup(m as RouteGroup);
             } else if (isRoute(m)) {
                 this.addRoute(m);
             } else if (typeof m === 'object' && m !== null) {
                 Object.values(m).forEach((val) => {
                     if (val && typeof val === 'object' && (val as any)._routifyType === 'group') {
-                        this.addGroup(val);
+                        this.addGroup(val as RouteGroup);
                     } else if (isRoute(val)) {
                         this.addRoute(val);
                     } else if (Array.isArray(val)) {
@@ -157,7 +157,7 @@ export class RouterBuilder {
                             if (isRoute(item)) {
                                 this.addRoute(item);
                             } else if (item && typeof item === 'object' && (item as any)._routifyType === 'group') {
-                                this.addGroup(item);
+                                this.addGroup(item as RouteGroup);
                             }
                         });
                     }

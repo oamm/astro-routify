@@ -260,8 +260,6 @@ export function toAstroResponse(result: HandlerResult): Response {
             body instanceof Blob ||
             isReadableStream(body);
 
-        const isForm = body instanceof FormData || body instanceof URLSearchParams;
-
         const finalHeaders = new Headers();
 
         // 1. Apply inferred defaults
@@ -327,18 +325,4 @@ export function toAstroResponse(result: HandlerResult): Response {
     }
 
     return new Response(null, {status: 204});
-}
-
-/**
- * Helper to extract a header value from HeadersInit.
- */
-function getHeader(headers: HeadersInit | undefined, name: string): string | null {
-    if (!headers) return null;
-    if (headers instanceof Headers) return headers.get(name);
-    if (Array.isArray(headers)) {
-        const found = headers.find(([k]) => k.toLowerCase() === name.toLowerCase());
-        return found ? found[1] : null;
-    }
-    const key = Object.keys(headers).find(k => k.toLowerCase() === name.toLowerCase());
-    return key ? (headers as any)[key] : null;
 }

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { defineHandler, type RoutifyContext } from './defineHandler';
-import { internalError, methodNotAllowed, notFound, toAstroResponse } from './responseHelpers';
+import { methodNotAllowed, notFound, toAstroResponse, type HandlerResult } from './responseHelpers';
 import { RouteTrie } from './RouteTrie';
 import type { Route } from './defineRoute';
 import { normalizeMethod } from './HttpMethod';

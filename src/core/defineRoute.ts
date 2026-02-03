@@ -27,6 +27,11 @@ export interface Route {
 	middlewares?: Middleware[];
 
 	/**
+	 * Optional metadata for the route (e.g. for OpenAPI generation).
+	 */
+	metadata?: Record<string, any>;
+
+	/**
 	 * Internal marker to identify the object type during module discovery.
 	 * @internal
 	 */
