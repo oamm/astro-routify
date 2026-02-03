@@ -4,6 +4,18 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.3.0] – 2026-02-02
+
+### ✨ Added
+- **Advanced Routing Matcher**:
+    - Support for single-segment wildcard `*`.
+    - Support for catch-all wildcard `**` (matches zero or more segments).
+    - Support for regex-constrained parameters `:name(<regex>)`.
+- **Priority Matching**: Deterministic resolution when multiple routes match (Static > Regex > Param > Wildcard > Catch-all).
+
+### ✅ Tests
+- New test suite `tests/AdvancedRouting.test.ts` covering all new matching patterns and priority rules.
+
 ## [1.2.1] – 2025-08-02
 
 ### 🛠 Changed

@@ -87,8 +87,10 @@ describe('HMR Simulation', () => {
         };
 
         const router1 = new RouterBuilder().addRegistered().addModules(modules).build();
-        expect(await (await router1(createContext('http://localhost/api/a', HttpMethod.GET))).text()).toBe('a1');
-        expect(await (await router1(createContext('http://localhost/api/b', HttpMethod.GET))).text()).toBe('b1');
+        expect(await (await router1(createContext('http://localhost/api/a', HttpMethod.GET)))
+            .text()).toBe('a1');
+        expect(await (await router1(createContext('http://localhost/api/b', HttpMethod.GET)))
+            .text()).toBe('b1');
 
         // Update both
         defineRoute(HttpMethod.GET, '/a', () => ok('a2'), true);
@@ -97,7 +99,9 @@ describe('HMR Simulation', () => {
         };
 
         const router2 = new RouterBuilder().addRegistered().addModules(modulesUpdated).build();
-        expect(await (await router2(createContext('http://localhost/api/a', HttpMethod.GET))).text()).toBe('a2');
-        expect(await (await router2(createContext('http://localhost/api/b', HttpMethod.GET))).text()).toBe('b2');
+        expect(await (await router2(createContext('http://localhost/api/a', HttpMethod.GET)))
+            .text()).toBe('a2');
+        expect(await (await router2(createContext('http://localhost/api/b', HttpMethod.GET)))
+            .text()).toBe('b2');
     });
 });

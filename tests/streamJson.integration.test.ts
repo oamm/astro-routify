@@ -4,7 +4,8 @@ import {describe, it, expect} from 'vitest';
 
 describe('streamJson split helpers - integration', () => {
     it('streams NDJSON values', async () => {
-        const route = streamJsonND('/ndjson', async ({response}) => {
+        const route = streamJsonND('/ndjson',
+            async ({response}) => {
             response.send({a: 1});
             response.send({b: 2});
             response.close();
@@ -29,7 +30,8 @@ describe('streamJson split helpers - integration', () => {
     });
 
     it('streams a valid JSON array', async () => {
-        const route = streamJsonArray('/array', async ({response}) => {
+        const route = streamJsonArray('/array',
+            async ({response}) => {
             response.send({x: 1});
             response.send({x: 2});
             response.close();
@@ -54,7 +56,8 @@ describe('streamJson split helpers - integration', () => {
     });
 
     it('handles AbortSignal during NDJSON stream', async () => {
-        const route = streamJsonND('/abort', async ({response, request}) => {
+        const route = streamJsonND('/abort',
+            async ({response, request}) => {
             let count = 0;
             const interval = setInterval(() => {
                 response.send({tick: count++});

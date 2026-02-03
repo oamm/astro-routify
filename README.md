@@ -110,6 +110,38 @@ export const GET = defineRouter([
 ]);
 ```
 
+### Advanced Matching
+
+`astro-routify` supports advanced routing patterns including wildcards and regex constraints.
+
+#### 1. Wildcards
+- `*` matches exactly one segment.
+- `**` matches zero or more segments (catch-all).
+
+```ts
+builder.addGet('/files/*/download', () => ok('one segment'));
+builder.addGet('/static/**', () => ok('all segments'));
+```
+
+#### 2. Regex Constraints
+You can constrain parameters using regex by wrapping the pattern in parentheses: `:param(regex)`.
+
+```ts
+// Matches only numeric IDs
+builder.addGet('/users/:id(\\d+)', ({ params }) => ok(params.id));
+
+// Matches hex colors
+builder.addGet('/color/:hex(^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$)', ({ params }) => ok(params.hex));
+```
+
+#### 3. Matching Priority
+When multiple routes could match a path, the router follows a deterministic priority order:
+1. **Static Match** (e.g., `/p/static`)
+2. **Regex Match** (e.g., `/p/:id(\\d+)`)
+3. **Param Match** (e.g., `/p/:id`)
+4. **Wildcard Match** (e.g., `/p/*`)
+5. **Catch-all Match** (e.g., `/**`)
+
 > 🧠 `defineRouter()` supports all HTTP methods — but Astro only executes the method you export (`GET`, `POST`, etc.)
 
 ### `RouterBuilder` (Catch-All & Fluent Builder)
