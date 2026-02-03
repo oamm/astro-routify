@@ -143,6 +143,15 @@ defineRoute({
 });
 ```
 
+### `RoutifyContext`
+
+The context object passed to handlers and middlewares extends Astro's `APIContext` with:
+
+- `params`: Route parameters (e.g., `:id`).
+- `query`: Parsed query string. Supports multi-value keys (`string | string[]`).
+- `searchParams`: The raw `URLSearchParams` object.
+- `state`: A shared object container for passing data between middlewares and handlers.
+
 ### `defineRouter()`
 
 Group multiple routes under one HTTP method handler:
@@ -159,7 +168,8 @@ export const GET = defineRouter([
 
 #### 1. Wildcards
 - `*` matches exactly one segment.
-- `**` matches zero or more segments (catch-all).
+- `**` matches zero or more segments (catch-all). **Must be at the end of the path.**
+  - Captures the remaining path into `ctx.params['*']`.
 
 ```ts
 builder.addGet('/files/*/download', () => ok('one segment'));
@@ -210,7 +220,7 @@ builder.group('/admin')
 
 // Route middleware
 builder.addPost('/user', validate(UserSchema), (ctx) => {
-    return ok(ctx.data.body);
+    return ok(ctx.state.body);
 });
 ```
 
@@ -227,7 +237,7 @@ const UserSchema = z.object({
 });
 
 builder.addPost('/register', validate({ body: UserSchema }), (ctx) => {
-    const user = ctx.data.body; // Fully typed if using TypeScript correctly
+    const user = ctx.state.body; // Fully typed if using TypeScript correctly
     return ok(user);
 });
 ```
@@ -392,9 +402,12 @@ builder.addGet("/ping", () => ok("pong"));
 
 #### Raw stream (e.g., Server-Sent Events)
 
+`stream()` automatically handles SSE headers and auto-formats string chunks with a `state: ` prefix and double-newlines.
+
 ```ts
 stream('/clock', async ({response}) => {
     const timer = setInterval(() => {
+        // Automatically sent as "state: <iso-date>\n\n"
         response.write(new Date().toISOString());
     }, 1000);
 

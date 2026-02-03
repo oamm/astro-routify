@@ -14,7 +14,7 @@ describe('Validation Middleware', () => {
     it('should accept valid request body', async () => {
         const builder = new RouterBuilder();
         builder.addPost('/user', validate(schema), (ctx) => {
-            return ok({ name: ctx.data.body.name });
+            return ok({ name: ctx.state.body.name });
         });
 
         const router = builder.build();
@@ -61,7 +61,7 @@ describe('Validation Middleware', () => {
         };
 
         const builder = new RouterBuilder();
-        builder.addGet('/search', validate(querySchema), (ctx) => ok(ctx.data.query));
+        builder.addGet('/search', validate(querySchema), (ctx) => ok(ctx.state.query));
 
         const router = builder.build();
         

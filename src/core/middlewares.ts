@@ -113,20 +113,20 @@ export interface ValidationSchema {
  * Middleware for request validation.
  * Supports any schema library with a `safeParse` method (like Zod).
  * 
- * Validated data is stored in `ctx.data.body`, `ctx.data.query`, etc.
+ * Validated state is stored in `ctx.state.body`, `ctx.state.query`, etc.
  */
 export function validate(schema: ValidationSchema): Middleware {
     return async (ctx, next) => {
         if (schema.params) {
             const result = schema.params.safeParse(ctx.params);
             if (!result.success) return toAstroResponse(badRequest({ error: 'Invalid parameters', details: result.error }));
-            ctx.data.params = result.data;
+            ctx.state.params = result.data;
         }
 
         if (schema.query) {
             const result = schema.query.safeParse(ctx.query);
             if (!result.success) return toAstroResponse(badRequest({ error: 'Invalid query string', details: result.error }));
-            ctx.data.query = result.data;
+            ctx.state.query = result.data;
         }
 
         if (schema.body) {
@@ -134,7 +134,7 @@ export function validate(schema: ValidationSchema): Middleware {
                 const body = await ctx.request.clone().json();
                 const result = schema.body.safeParse(body);
                 if (!result.success) return toAstroResponse(badRequest({ error: 'Invalid request body', details: result.error }));
-                ctx.data.body = result.data;
+                ctx.state.body = result.data;
             } catch (e) {
                 return toAstroResponse(badRequest({ error: 'Invalid JSON body' }));
             }

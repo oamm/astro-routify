@@ -33,7 +33,7 @@ describe('stream() helper - integration', () => {
             chunks.length === 1 ? chunks[0] : concatUint8(chunks)
         );
 
-        expect(text).toBe('data: hello\n\ndata: world\n\n');
+        expect(text).toBe('state: hello\n\nstate: world\n\n');
     });
 });
 

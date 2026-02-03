@@ -7,14 +7,21 @@ import { internalError, toAstroResponse, type HandlerResult } from './responseHe
 export interface RoutifyContext<State = Record<string, any>> extends APIContext {
     /**
      * Parsed query parameters from the URL.
+     * Note: If multiple parameters have the same key, only the last one is included.
+     * Use `searchParams` for full multi-value support.
      */
-    query: Record<string, string>;
+    query: Record<string, string | string[]>;
 
     /**
-     * Shared data container for middlewares and handlers (e.g., validation results).
+     * Full URLSearchParams object for the incoming request.
+     */
+    searchParams: URLSearchParams;
+
+    /**
+     * Shared state container for middlewares and handlers (e.g., validation results).
      * This is where middlewares can store information for subsequent handlers.
      */
-    data: State;
+    state: State;
 }
 
 /**

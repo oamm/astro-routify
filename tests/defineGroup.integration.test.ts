@@ -58,11 +58,11 @@ describe('RouterBuilder + defineGroup - route handling', () => {
     it('should match a route with trailing slash in group', async () => {
         const handler = vi.fn(() => ok({trailing: true}));
 
-        const group = defineGroup('/data').addGet('/sync/', handler);
+        const group = defineGroup('/state').addGet('/sync/', handler);
 
         const router = new RouterBuilder({basePath: '/api'}).addGroup(group);
 
-        const mockRequest = new Request('http://localhost/api/data/sync/', {
+        const mockRequest = new Request('http://localhost/api/state/sync/', {
             method: 'GET',
         });
 

@@ -106,7 +106,7 @@ export class RouterBuilder {
         const groupsByKey = new Map<string, RouteGroup>();
 
         items.forEach((item, index) => {
-            if (item && typeof item === 'object' && item.constructor?.name === 'RouteGroup') {
+            if (item && typeof item === 'object' && (item as any)._routifyType === 'group') {
                 const key = (item as RouteGroup).getBasePath();
                 lastGroupIndex.set(key, index);
                 groupsByKey.set(key, item as RouteGroup);
@@ -118,7 +118,7 @@ export class RouterBuilder {
         });
 
         items.forEach((item, index) => {
-            if (item && typeof item === 'object' && item.constructor?.name === 'RouteGroup') {
+            if (item && typeof item === 'object' && (item as any)._routifyType === 'group') {
                 const key = (item as RouteGroup).getBasePath();
                 if (lastGroupIndex.get(key) === index) this.addGroup(groupsByKey.get(key)!);
             } else if (isRoute(item)) {
@@ -142,13 +142,13 @@ export class RouterBuilder {
     addModules(modules: Record<string, any>): this {
         Object.keys(modules).sort().forEach((key) => {
             const m = modules[key];
-            if (m && typeof m === 'object' && m.constructor?.name === 'RouteGroup') {
+            if (m && typeof m === 'object' && (m as any)._routifyType === 'group') {
                 this.addGroup(m);
             } else if (isRoute(m)) {
                 this.addRoute(m);
             } else if (typeof m === 'object' && m !== null) {
                 Object.values(m).forEach((val) => {
-                    if (val && typeof val === 'object' && val.constructor?.name === 'RouteGroup') {
+                    if (val && typeof val === 'object' && (val as any)._routifyType === 'group') {
                         this.addGroup(val);
                     } else if (isRoute(val)) {
                         this.addRoute(val);
@@ -156,7 +156,7 @@ export class RouterBuilder {
                         val.forEach((item) => {
                             if (isRoute(item)) {
                                 this.addRoute(item);
-                            } else if (item && typeof item === 'object' && item.constructor?.name === 'RouteGroup') {
+                            } else if (item && typeof item === 'object' && (item as any)._routifyType === 'group') {
                                 this.addGroup(item);
                             }
                         });

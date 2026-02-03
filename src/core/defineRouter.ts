@@ -29,7 +29,7 @@ export interface RouterOptions {
     /**
      * Custom error handler for the router.
      */
-    onError?: (error: unknown, ctx: RoutifyContext) => ReturnType<typeof internalError> | Response;
+    onError?: (error: unknown, ctx: RoutifyContext) => HandlerResult | Response;
 }
 
 /**
@@ -76,8 +76,22 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
         const url = new URL(routifyCtx.request.url);
         const pathname = url.pathname;
 
-        routifyCtx.query = Object.fromEntries(url.searchParams.entries());
-        routifyCtx.data = {};
+        routifyCtx.searchParams = url.searchParams;
+        const query: Record<string, string | string[]> = {};
+        url.searchParams.forEach((value, key) => {
+            const existing = query[key];
+            if (existing !== undefined) {
+                if (Array.isArray(existing)) {
+                    existing.push(value);
+                } else {
+                    query[key] = [existing, value];
+                }
+            } else {
+                query[key] = value;
+            }
+        });
+        routifyCtx.query = query;
+        routifyCtx.state = {};
 
         let path = pathname;
         if (basePath !== '') {

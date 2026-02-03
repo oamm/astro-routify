@@ -7,7 +7,7 @@ import { createJsonStreamRoute, JsonStreamWriter } from './internal/createJsonSt
  * Defines a JSON streaming route that emits a valid JSON array.
  *
  * This helper returns a valid `application/json` response containing
- * a streamable array of JSON values. Useful for large data exports
+ * a streamable array of JSON values. Useful for large state exports
  * or APIs where the full array can be streamed as it's generated.
  *
  * Unlike `streamJsonND()`, this wraps all values in `[` and `]`

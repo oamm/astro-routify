@@ -13,6 +13,9 @@ export type HandlerResult =
     | ArrayBuffer
     | Uint8Array
     | ReadableStream<Uint8Array>
+    | Blob
+    | FormData
+    | URLSearchParams
     | null
     | undefined;
 
@@ -148,7 +151,7 @@ export const internalError = (
 /**
  * Sends a binary or stream-based file response with optional content-disposition.
  *
- * @param content - The file data (Blob, ArrayBuffer, or stream)
+ * @param content - The file state (Blob, ArrayBuffer, or stream)
  * @param contentType - MIME type of the file
  * @param fileName - Optional download filename
  * @param headers - Optional extra headers
@@ -209,29 +212,68 @@ export function isReadableStream(value: unknown): value is ReadableStream<Uint8A
  */
 export function toAstroResponse(result: HandlerResult): Response {
     if (result instanceof Response) return result;
-    
-    if (result === undefined || result === null) {
-        return new Response(null, { status: 204 });
+
+    if (result === undefined) {
+        return new Response(null, {status: 204});
+    }
+
+    if (result === null) {
+        return new Response('null', {
+            status: 200,
+            headers: {'Content-Type': 'application/json; charset=utf-8'},
+        });
     }
 
     // If it's a ResultResponse object (has status)
-    if (typeof result === 'object' && 'status' in result && typeof (result as any).status === 'number') {
-        const { status, body, headers } = result as ResultResponse;
+    if (
+        typeof result === 'object' &&
+        'status' in result &&
+        typeof (result as any).status === 'number'
+    ) {
+        const {status, body, headers} = result as ResultResponse;
 
-        if (body === undefined || body === null) {
-            return new Response(null, { status, headers });
+        if (body === undefined) {
+            return new Response(null, {status, headers});
+        }
+
+        if (body === null) {
+            const finalHeaders: HeadersInit = {
+                ...(headers ?? {}),
+                ...(!getHeader(headers, 'Content-Type')
+                    ? {'Content-Type': 'application/json; charset=utf-8'}
+                    : {}),
+            };
+            return new Response('null', {status, headers: finalHeaders});
         }
 
         if (body instanceof Response) return body;
 
-        const isJson = isPlainObject(body) || Array.isArray(body);
+        const isJson =
+            typeof body === 'number' ||
+            typeof body === 'boolean' ||
+            isPlainObject(body) ||
+            Array.isArray(body);
+
+        const isBinary =
+            body instanceof ArrayBuffer ||
+            body instanceof Uint8Array ||
+            body instanceof Blob ||
+            isReadableStream(body);
+
+        const isForm = body instanceof FormData || body instanceof URLSearchParams;
+
         const finalHeaders: HeadersInit = {
             ...(headers ?? {}),
-            ...(isJson && !getHeader(headers, 'Content-Type') ? { 'Content-Type': 'application/json; charset=utf-8' } : {}),
+            ...(isJson && !getHeader(headers, 'Content-Type')
+                ? {'Content-Type': 'application/json; charset=utf-8'}
+                : {}),
+            ...(isBinary && !getHeader(headers, 'Content-Type')
+                ? {'Content-Type': 'application/octet-stream'}
+                : {}),
         };
 
         return new Response(
-            isJson ? JSON.stringify(body) : (body as BodyInit),
+            isJson ? JSON.stringify(body) : (body as any),
             {
                 status,
                 headers: finalHeaders,
@@ -243,29 +285,41 @@ export function toAstroResponse(result: HandlerResult): Response {
     if (typeof result === 'string') {
         return new Response(result, {
             status: 200,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+            headers: {'Content-Type': 'text/plain; charset=utf-8'},
         });
     }
 
     if (typeof result === 'number' || typeof result === 'boolean') {
-        return new Response(String(result), {
+        return new Response(JSON.stringify(result), {
             status: 200,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+            headers: {'Content-Type': 'application/json; charset=utf-8'},
         });
     }
 
-    if (result instanceof ArrayBuffer || result instanceof Uint8Array || isReadableStream(result)) {
-        return new Response(result as BodyInit, { status: 200 });
+    if (
+        result instanceof ArrayBuffer ||
+        result instanceof Uint8Array ||
+        result instanceof Blob ||
+        isReadableStream(result)
+    ) {
+        return new Response(result as any, {
+            status: 200,
+            headers: {'Content-Type': 'application/octet-stream'},
+        });
+    }
+
+    if (result instanceof FormData || result instanceof URLSearchParams) {
+        return new Response(result as any, {status: 200});
     }
 
     if (Array.isArray(result) || isPlainObject(result)) {
         return new Response(JSON.stringify(result), {
             status: 200,
-            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+            headers: {'Content-Type': 'application/json; charset=utf-8'},
         });
     }
 
-    return new Response(null, { status: 204 });
+    return new Response(null, {status: 204});
 }
 
 /**

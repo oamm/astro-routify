@@ -4,6 +4,32 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.5.0] – 2026-02-03
+
+### ⚠️ Breaking Changes
+- **Context Renaming**: `ctx.data` has been renamed to `ctx.state` to better align with industry standards (like Koa/Hono).
+- **SSE Prefix**: The default prefix for `stream()` text chunks in `text/event-stream` mode is now `state: ` (matching internal project conventions). *Note: Use `setContentType()` if you need standard `data: ` prefix or raw output.*
+
+### ✨ Added
+- **Non-lossy Query Parsing**: 
+    - `ctx.query` now supports multi-value keys: `Record<string, string | string[]>`.
+    - `ctx.searchParams` added to provide the raw `URLSearchParams` object.
+- **Enhanced Response Support**:
+    - `toAstroResponse` now natively handles `Blob`, `FormData`, `URLSearchParams`, `Uint8Array`, and `ReadableStream`.
+    - `null` now returns `200 OK` with JSON `null` instead of `204 No Content`.
+    - `undefined` still returns `204 No Content`.
+    - Primitives (numbers, booleans) now return `application/json` by default.
+- **Improved Routing Determinism**:
+    - Route matching is now fully deterministic even with overlapping regex or dynamic parameters.
+    - Catch-all `**` now captures the remainder of the path into `ctx.params['*']` (URL-decoded, no leading slash).
+- **HMR & Module Discovery**:
+    - Improved reliability of `addModules()` and `addRegistered()` using internal markers instead of constructor names.
+    - Explicit "last-registration-wins" policy for the global registry to support better HMR.
+
+### 🛠 Changed
+- **Catch-all Restriction**: The `**` wildcard is now only allowed as the final segment of a path.
+- **SSE Auto-formatting**: `stream()` now automatically wraps string writes with a prefix and double-newlines when in SSE mode.
+
 ## [1.4.0] – 2026-02-02
 
 ### ✨ Added
@@ -51,7 +77,7 @@ All notable changes to **astro-routify** will be documented in this file.
   - When writing string values, `stream()` automatically wraps them as `data: ...\n\n`, per the [Server-Sent Events specification](https://html.spec.whatwg.org/multipage/server-sent-events.html#server-sent-events).
   - This makes it easier to send valid `EventSource` messages:
     ```ts
-    response.write('hello'); // now sends: "data: hello\n\n"
+    response.write('hello'); // now sends: "state: hello\n\n"
     ```
 
 ### ✅ Behavior

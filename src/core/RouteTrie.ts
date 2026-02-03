@@ -7,18 +7,18 @@ interface RegexChild {
 	paramName: string;
 }
 
-interface ParamChild {
-    paramName: string;
-    node: TrieNode;
+interface RouteInfo {
+    route: Route;
+    paramNames: Record<number, string>;
 }
 
 interface TrieNode {
 	children: Map<string, TrieNode>;
 	regexChildren?: RegexChild[];
-	paramChildren?: ParamChild[];
+	paramChild?: TrieNode;
 	wildcardChild?: TrieNode;
 	catchAllChild?: TrieNode;
-	routes: Map<HttpMethod, Route>;
+	routes: Map<HttpMethod, RouteInfo>;
 }
 
 interface RouteMatch {
@@ -36,8 +36,10 @@ export class RouteTrie {
 		}
 		const segments = this.segmentize(route.path);
 		let node = this.root;
+        const paramNames: Record<number, string> = {};
 
-		for (const segment of segments) {
+		for (let i = 0; i < segments.length; i++) {
+            const segment = segments[i];
 			if (segment === '**') {
 				if (!node.catchAllChild) {
 					node.catchAllChild = { children: new Map(), routes: new Map() };
@@ -73,14 +75,11 @@ export class RouteTrie {
 					node = regexNode;
 				} else {
 					const paramName = segment.slice(1);
-					if (!node.paramChildren) node.paramChildren = [];
-                    
-                    let paramNode = node.paramChildren.find(p => p.paramName === paramName)?.node;
-                    if (!paramNode) {
-                        paramNode = { children: new Map(), routes: new Map() };
-                        node.paramChildren.push({ paramName, node: paramNode });
+                    paramNames[i] = paramName;
+                    if (!node.paramChild) {
+                        node.paramChild = { children: new Map(), routes: new Map() };
                     }
-					node = paramNode;
+					node = node.paramChild;
 				}
 			} else {
 				if (!node.children.has(segment)) {
@@ -90,32 +89,43 @@ export class RouteTrie {
 			}
 		}
 
-		node.routes.set(route.method, route);
+		node.routes.set(route.method, { route, paramNames });
 	}
 
 	find(path: string, method: HttpMethod): RouteMatch {
 		const segments = this.segmentize(path);
-		return this.matchNode(this.root, segments, 0, method);
+		return this.matchNode(this.root, segments, 0, method, {});
 	}
 
 	private matchNode(
 		node: TrieNode,
 		segments: string[],
 		index: number,
-		method: HttpMethod
+		method: HttpMethod,
+        capturedValues: Record<number, string>
 	): RouteMatch {
 		if (index === segments.length) {
-			let route = node.routes.get(method) ?? null;
-			let allowed = route ? undefined : [...node.routes.keys()];
+			let info = node.routes.get(method) ?? null;
+			let allowed = info ? undefined : [...node.routes.keys()];
 
 			// If no route here, check if there's a catch-all that matches "empty" remaining
-			if (!route && node.catchAllChild) {
-				route = node.catchAllChild.routes.get(method) ?? null;
-				allowed = route ? undefined : [...node.catchAllChild.routes.keys()];
-                return { route, allowed, params: { '*': '' } };
+			if (!info && node.catchAllChild) {
+				info = node.catchAllChild.routes.get(method) ?? null;
+				allowed = info ? undefined : [...node.catchAllChild.routes.keys()];
+                if (info) {
+                    return { route: info.route, allowed, params: { '*': '' } };
+                }
 			}
 
-			return { route, allowed, params: {} };
+            if (info) {
+                const params: Record<string, string> = {};
+                for (const [depth, name] of Object.entries(info.paramNames)) {
+                    params[name] = decodeURIComponent(capturedValues[Number(depth)]);
+                }
+                return { route: info.route, params };
+            }
+
+			return { route: null, allowed, params: {} };
 		}
 
 		const segment = segments[index];
@@ -123,7 +133,7 @@ export class RouteTrie {
 		// 1. Static Match
 		const staticChild = node.children.get(segment);
 		if (staticChild) {
-			const match = this.matchNode(staticChild, segments, index + 1, method);
+			const match = this.matchNode(staticChild, segments, index + 1, method, capturedValues);
 			if (match.route || (match.allowed && match.allowed.length > 0)) return match;
 		}
 
@@ -131,9 +141,9 @@ export class RouteTrie {
 		if (node.regexChildren) {
 			for (const rc of node.regexChildren) {
 				if (rc.regex.test(segment)) {
-					const match = this.matchNode(rc.node, segments, index + 1, method);
+					const match = this.matchNode(rc.node, segments, index + 1, method, capturedValues);
 					if (match.route || (match.allowed && match.allowed.length > 0)) {
-						match.params[rc.paramName] = segment;
+						match.params[rc.paramName] = decodeURIComponent(segment);
 						return match;
 					}
 				}
@@ -141,32 +151,32 @@ export class RouteTrie {
 		}
 
 		// 3. Param Match
-		if (node.paramChildren) {
-			for (const pc of node.paramChildren) {
-                const match = this.matchNode(pc.node, segments, index + 1, method);
-                if (match.route || (match.allowed && match.allowed.length > 0)) {
-                    match.params[pc.paramName] = segment;
-                    return match;
-                }
+		if (node.paramChild) {
+            capturedValues[index] = segment;
+            const match = this.matchNode(node.paramChild, segments, index + 1, method, capturedValues);
+            if (match.route || (match.allowed && match.allowed.length > 0)) {
+                return match;
             }
+            delete capturedValues[index];
 		}
 
 		// 4. Wildcard Match (*)
 		if (node.wildcardChild) {
-			const match = this.matchNode(node.wildcardChild, segments, index + 1, method);
+			const match = this.matchNode(node.wildcardChild, segments, index + 1, method, capturedValues);
 			if (match.route || (match.allowed && match.allowed.length > 0)) return match;
 		}
 
 		// 5. Catch-all Match (**)
 		if (node.catchAllChild) {
-			const route = node.catchAllChild.routes.get(method) ?? null;
+			const info = node.catchAllChild.routes.get(method) ?? null;
             const params: Record<string, string | undefined> = {};
             // Capture the rest of the path
-            params['*'] = segments.slice(index).join('/');
+            const remainder = segments.slice(index).join('/');
+            params['*'] = decodeURIComponent(remainder);
             
 			return {
-				route,
-				allowed: route ? undefined : [...node.catchAllChild.routes.keys()],
+				route: info ? info.route : null,
+				allowed: info ? undefined : [...node.catchAllChild.routes.keys()],
 				params,
 			};
 		}

@@ -6,7 +6,7 @@ import { defineRoute, type Route } from '../defineRoute';
 type JsonValue = any;
 
 /**
- * A writer interface for streaming JSON data to the response body.
+ * A writer interface for streaming JSON state to the response body.
  * Supports both NDJSON and array formats.
  */
 export interface JsonStreamWriter {

@@ -23,14 +23,14 @@ describe('RoutifyContext', () => {
         expect(body.query).toEqual({ q: 'astro', sort: 'desc' });
     });
 
-    it('should provide an empty data object in ctx.data', async () => {
+    it('should provide an empty state object in ctx.state', async () => {
         const builder = new RouterBuilder();
-        builder.addGet('/data', (ctx) => {
-            return ok({ hasData: !!ctx.data });
+        builder.addGet('/state', (ctx) => {
+            return ok({ hasData: !!ctx.state });
         });
 
         const router = builder.build();
-        const res = await router(createContext('http://localhost/api/data', 'GET'));
+        const res = await router(createContext('http://localhost/api/state', 'GET'));
         const body = await res.json() as any;
 
         expect(body.hasData).toBe(true);

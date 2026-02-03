@@ -27,9 +27,10 @@ export interface Route {
 	middlewares?: Middleware[];
 
 	/**
-	 * Optional metadata for the route (e.g., for OpenAPI generation).
+	 * Internal marker to identify the object type during module discovery.
+	 * @internal
 	 */
-	metadata?: Record<string, any>;
+	_routifyType?: 'route';
 }
 
 /**
@@ -82,6 +83,8 @@ export function defineRoute(
 		autoRegister = !!maybeAutoRegister;
 	}
 
+    route._routifyType = 'route';
+
 	validateRoute(route);
 
 	if (autoRegister) {
@@ -119,8 +122,9 @@ export function isRoute(obj: any): obj is Route {
     return (
         obj &&
         typeof obj === 'object' &&
-        typeof obj.method === 'string' &&
-        typeof obj.path === 'string' &&
-        typeof obj.handler === 'function'
+        (obj._routifyType === 'route' || 
+            (typeof obj.method === 'string' &&
+             typeof obj.path === 'string' &&
+             typeof obj.handler === 'function'))
     );
 }

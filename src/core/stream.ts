@@ -4,7 +4,7 @@ import { HttpMethod } from './HttpMethod';
 import { HeadersInit } from 'undici';
 
 /**
- * A writer for streaming raw data to the response body.
+ * A writer for streaming raw state to the response body.
  *
  * This is used inside the `stream()` route handler to emit bytes
  * or strings directly to the client with backpressure awareness.
@@ -55,7 +55,7 @@ export interface StreamOptions {
 }
 
 /**
- * Defines a generic streaming route that can write raw chunks of data
+ * Defines a generic streaming route that can write raw chunks of state
  * to the response in real time using a `ReadableStream`.
  *
  * Suitable for Server-Sent Events (SSE), long-polling, streamed HTML,
@@ -64,7 +64,7 @@ export interface StreamOptions {
  * @example
  * stream('/clock', async ({ response }) => {
  *   const timer = setInterval(() => {
- *     response.write(`data: ${new Date().toISOString()}\n\n`);
+ *     response.write(`state: ${new Date().toISOString()}\n\n`);
  *   }, 1000);
  *
  *   setTimeout(() => {
@@ -96,7 +96,7 @@ export function stream(
             write: (chunk) => {
                 if (closed || !controllerRef) return;
                 const bytes = typeof chunk === 'string'
-                    ? (contentType === 'text/event-stream' ? encoder.encode(`data: ${chunk}\n\n`) : encoder.encode(chunk))
+                    ? (contentType === 'text/event-stream' ? encoder.encode(`state: ${chunk}\n\n`) : encoder.encode(chunk))
                     : chunk;
                 controllerRef.enqueue(bytes);
             },

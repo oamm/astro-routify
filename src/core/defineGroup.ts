@@ -15,6 +15,7 @@ import { globalRegistry } from './registry';
  *   .addPost('/', createUser);
  */
 export class RouteGroup {
+    readonly _routifyType = 'group';
     private basePath: string;
     private routes: Route[] = [];
     private middlewares: Middleware[] = [];

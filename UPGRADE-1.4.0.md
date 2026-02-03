@@ -1,5 +1,7 @@
 # Upgrade to v1.4.0
 
+> ⚠️ **Note**: Starting from v1.5.0, `ctx.data` has been renamed to `ctx.state`.
+
 This release introduces major features like Middleware, Validation, and enhanced Context.
 
 ## 🚀 What’s New

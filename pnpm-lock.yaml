@@ -2259,7 +2259,7 @@ snapshots:
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
-      - '@azure/data-tables'
+      - '@azure/state-tables'
       - '@azure/identity'
       - '@azure/keyvault-secrets'
       - '@azure/storage-blob'
