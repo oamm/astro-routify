@@ -356,6 +356,18 @@ export class RouterBuilder {
             allRoutes.push(...group.getRoutes());
         }
 
+        // Detect duplicates in production (warnings)
+        if (!this._shouldLog) {
+            const seen = new Set<string>();
+            for (const route of allRoutes) {
+                const key = `${route.method}:${route.path}`;
+                if (seen.has(key)) {
+                    console.warn(`[RouterBuilder] Duplicate route detected: ${key}. The last one will be used.`);
+                }
+                seen.add(key);
+            }
+        }
+
         // Apply global middlewares to all routes before building
         const finalRoutes = allRoutes.map(route => ({
             ...route,

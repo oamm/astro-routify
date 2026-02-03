@@ -96,6 +96,14 @@ At runtime, each request performs a deterministic path + method lookup and execu
 | Vertical slices (glob) | `addModules()` |
 | Large apps / plugins | Global registry |
 
+### 🏗 Trie Invariants
+For architectural stability and predictable performance, the following invariants are enforced:
+- **Single Dynamic Branching**: A node has at most one dynamic parameter child (`paramChild`).
+- **Unified Param Node**: The `paramChild` represents *any* `:param` at that depth; parameter names are bound from route-specific metadata during matching.
+- **Structural Identity**: Two routes differing only by parameter name (e.g., `/u/:id` and `/u/:slug`) are considered structurally identical.
+- **Deterministic Match Order**: Static > Regex (sorted by specificity) > Param > Wildcard > Catch-all.
+- **Terminal Catch-all**: `**` matches are only allowed as the final segment.
+
 ## 💡 Full Example
 
 You can find an implementation example in the [astro-routify-example](https://github.com/oamm/astro-routify-example)
@@ -133,24 +141,28 @@ Declare a single route. Now supports middlewares and metadata.
 
 > 💡 `defineRoute` supports two signatures: you can pass a full `Route` object, or specify `method`, `path`, and `handler` as separate arguments.
 
+### `RoutifyContext` & `Context`
+
+The context object passed to handlers and middlewares extends Astro's `APIContext`. For better ergonomics, you can use the `Context` type alias:
+
 ```ts
-defineRoute({
-    method: 'GET',
-    path: '/users/:id',
-    middlewares: [authMiddleware],
-    metadata: { summary: 'Get user by ID' },
-    handler: ({params}) => ok({userId: params.id})
-});
+import { type Context } from 'astro-routify';
+
+const handler = (ctx: Context) => ok('hello');
 ```
 
-### `RoutifyContext`
+Properties include:
 
-The context object passed to handlers and middlewares extends Astro's `APIContext` with:
-
-- `params`: Route parameters (e.g., `:id`).
-- `query`: Parsed query string. Supports multi-value keys (`string | string[]`).
-- `searchParams`: The raw `URLSearchParams` object.
+- `params`: Route parameters (e.g., `:id`). Matching and capture operate on **decoded** path segments. Decoding occurs exactly once per segment prior to matching.
+- `query`: A read-only snapshot of parsed query parameters. Supports multi-value keys (`string | string[]`).
+- `searchParams`: The raw `URLSearchParams` object. Note: Mutations to `searchParams` do not reflect in `ctx.query`.
 - `state`: A shared object container for passing data between middlewares and handlers.
+
+#### Path normalization & basePath stripping
+- `basePath` stripping occurs before decoding and normalization.
+- Stripping happens only on segment boundaries (e.g., `/api/users` matches, `/apiusers` does not).
+- Trailing slashes are normalized by segmentization; `/users` and `/users/` are equivalent.
+- All matching and parameter capture operate on decoded segments.
 
 ### `defineRouter()`
 
@@ -178,6 +190,8 @@ builder.addGet('/static/**', () => ok('all segments'));
 
 #### 2. Regex Constraints
 You can constrain parameters using regex by wrapping the pattern in parentheses: `:param(regex)`.
+
+> ⚠️ **Specificity Note**: Regex sorting is deterministic (longer pattern first) but heuristic. Users should avoid overlapping regex constraints at the same depth.
 
 ```ts
 // Matches only numeric IDs
@@ -386,6 +400,8 @@ export const ALL = builder
 
 > 💡 **The Catch-All Slug**: The filename `[...slug].ts` tells Astro to match any path under that directory. For example, if placed in `src/pages/api/[...slug].ts`, it matches `/api/users`, `/api/ping`, etc. `astro-routify` then takes over and matches the rest of the path against your defined routes.
 
+> ⚠️ In production (non-HMR) builds, duplicate route registrations with the same `method:path` MAY emit warnings and the last registration wins. In development/HMR flows, the registry intentionally preserves history and the builder deduplicates using a last-wins policy.
+
 You can also still manually add routes or groups:
 
 ```ts
@@ -399,6 +415,10 @@ builder.addGet("/ping", () => ok("pong"));
 ## ⚡ Advanced Features
 
 ### 🔄 Streaming responses
+
+#### Lifecycle & Guarantees
+- **Short-circuiting**: Returning a stream result (e.g., from `stream()`) short-circuits the middleware chain; `next()` must not be called after the response starts.
+- **Abort Semantics**: If the client disconnects, the stream closes silently. Any internal controllers are closed via `AbortSignal`. Cleanup hooks should be idempotent.
 
 #### Raw stream (e.g., Server-Sent Events)
 
@@ -447,7 +467,11 @@ streamJsonArray('/items', async ({response}) => {
 
 ### 📖 OpenAPI (Swagger) Generation
 
-Automatically generate API documentation:
+Automatically generate API documentation from your router instance.
+
+- **Catch-all (`**`)**: Represented as `{rest}` parameter.
+- **Wildcard (`*`)**: Represented as `{any}` parameter.
+- **Regex**: Mapped to a string schema with a `pattern` constraint.
 
 ```ts
 import { generateOpenAPI } from 'astro-routify';
@@ -492,7 +516,9 @@ const router = new RouterBuilder({ debug: true });
 
 ## 🔁 Response Helpers
 
-Avoid boilerplate `new Response(JSON.stringify(...))`:
+Avoid boilerplate `new Response(JSON.stringify(...))`. 
+
+> 💡 **Header Precedence**: Explicit headers provided via `ResultResponse` (e.g., `ok(data, { 'Content-Type': '...' })`) always take precedence over inferred defaults.
 
 ```ts
 import {fileResponse} from 'astro-routify';

@@ -237,12 +237,12 @@ export function toAstroResponse(result: HandlerResult): Response {
         }
 
         if (body === null) {
-            const finalHeaders: HeadersInit = {
-                ...(headers ?? {}),
-                ...(!getHeader(headers, 'Content-Type')
-                    ? {'Content-Type': 'application/json; charset=utf-8'}
-                    : {}),
-            };
+            const finalHeaders = new Headers();
+            finalHeaders.set('Content-Type', 'application/json; charset=utf-8');
+            if (headers) {
+                const h = new Headers(headers);
+                h.forEach((value, key) => finalHeaders.set(key, value));
+            }
             return new Response('null', {status, headers: finalHeaders});
         }
 
@@ -262,15 +262,22 @@ export function toAstroResponse(result: HandlerResult): Response {
 
         const isForm = body instanceof FormData || body instanceof URLSearchParams;
 
-        const finalHeaders: HeadersInit = {
-            ...(headers ?? {}),
-            ...(isJson && !getHeader(headers, 'Content-Type')
-                ? {'Content-Type': 'application/json; charset=utf-8'}
-                : {}),
-            ...(isBinary && !getHeader(headers, 'Content-Type')
-                ? {'Content-Type': 'application/octet-stream'}
-                : {}),
-        };
+        const finalHeaders = new Headers();
+
+        // 1. Apply inferred defaults
+        if (isJson) {
+            finalHeaders.set('Content-Type', 'application/json; charset=utf-8');
+        } else if (isBinary) {
+            finalHeaders.set('Content-Type', 'application/octet-stream');
+        }
+
+        // 2. Explicit headers take precedence
+        if (headers) {
+            const h = new Headers(headers);
+            h.forEach((value, key) => {
+                finalHeaders.set(key, value);
+            });
+        }
 
         return new Response(
             isJson ? JSON.stringify(body) : (body as any),

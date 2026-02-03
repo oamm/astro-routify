@@ -41,7 +41,11 @@ export function generateOpenAPI(router: any, options: OpenAPIOptions) {
         const path = route.path;
         // OpenAPI paths must start with / and should not include the basePath if it's in servers
         // Convert :param or :param(regex) to {param}
-        const openApiPath = path.replace(/:([a-zA-Z0-9_]+)(\(.*?\))?/g, '{$1}');
+        // Convert ** to {rest} and * to {any}
+        let openApiPath = path
+            .replace(/:([a-zA-Z0-9_]+)(\(.*?\))?/g, '{$1}')
+            .replace(/\*\*/g, '{rest}')
+            .replace(/\*/g, '{any}');
         
         if (!spec.paths[openApiPath]) spec.paths[openApiPath] = {};
         
@@ -61,14 +65,37 @@ export function generateOpenAPI(router: any, options: OpenAPIOptions) {
         };
 
         // Extract path parameters
-        const pathParamMatches = path.matchAll(/:([a-zA-Z0-9_]+)/g);
-        for (const match of pathParamMatches) {
-            const name = match[1];
+        const paramRegex = /:([a-zA-Z0-9_]+)(?:\((.*?)\))?/g;
+        let pMatch;
+        while ((pMatch = paramRegex.exec(path)) !== null) {
+            const name = pMatch[1];
+            const pattern = pMatch[2];
             spec.paths[openApiPath][method].parameters.push({
                 name,
                 in: 'path',
                 required: true,
-                schema: { type: 'string' }
+                schema: { 
+                    type: 'string',
+                    pattern: pattern ? pattern : undefined
+                }
+            });
+        }
+
+        if (path.includes('**')) {
+            spec.paths[openApiPath][method].parameters.push({
+                name: 'rest',
+                in: 'path',
+                required: true,
+                schema: { type: 'string' },
+                description: 'Catch-all path'
+            });
+        } else if (path.includes('*')) {
+            spec.paths[openApiPath][method].parameters.push({
+                name: 'any',
+                in: 'path',
+                required: true,
+                schema: { type: 'string' },
+                description: 'Wildcard segment'
             });
         }
     }

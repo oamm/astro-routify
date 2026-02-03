@@ -34,7 +34,7 @@ export class RouteTrie {
 		if (!route || typeof route.path !== 'string') {
 			return;
 		}
-		const segments = this.segmentize(route.path);
+		const segments = this.segmentize(route.path, true);
 		let node = this.root;
         const paramNames: Record<number, string> = {};
 
@@ -93,7 +93,7 @@ export class RouteTrie {
 	}
 
 	find(path: string, method: HttpMethod): RouteMatch {
-		const segments = this.segmentize(path);
+		const segments = this.segmentize(path, true);
 		return this.matchNode(this.root, segments, 0, method, {});
 	}
 
@@ -120,7 +120,7 @@ export class RouteTrie {
             if (info) {
                 const params: Record<string, string> = {};
                 for (const [depth, name] of Object.entries(info.paramNames)) {
-                    params[name] = decodeURIComponent(capturedValues[Number(depth)]);
+                    params[name] = capturedValues[Number(depth)];
                 }
                 return { route: info.route, params };
             }
@@ -143,7 +143,7 @@ export class RouteTrie {
 				if (rc.regex.test(segment)) {
 					const match = this.matchNode(rc.node, segments, index + 1, method, capturedValues);
 					if (match.route || (match.allowed && match.allowed.length > 0)) {
-						match.params[rc.paramName] = decodeURIComponent(segment);
+						match.params[rc.paramName] = segment;
 						return match;
 					}
 				}
@@ -172,7 +172,7 @@ export class RouteTrie {
             const params: Record<string, string | undefined> = {};
             // Capture the rest of the path
             const remainder = segments.slice(index).join('/');
-            params['*'] = decodeURIComponent(remainder);
+            params['*'] = remainder;
             
 			return {
 				route: info ? info.route : null,
@@ -184,8 +184,15 @@ export class RouteTrie {
 		return { route: null, params: {} };
 	}
 
-	private segmentize(path: string): string[] {
+	private segmentize(path: string, decode = false): string[] {
 		if (typeof path !== 'string') return [];
-		return path.split('/').filter(Boolean);
+		const segments = path.split('/').filter(Boolean);
+        return decode ? segments.map(s => {
+            try {
+                return decodeURIComponent(s);
+            } catch {
+                return s;
+            }
+        }) : segments;
 	}
 }

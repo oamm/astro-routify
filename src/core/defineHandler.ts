@@ -25,6 +25,11 @@ export interface RoutifyContext<State = Record<string, any>> extends APIContext 
 }
 
 /**
+ * Convenience type alias for RoutifyContext.
+ */
+export type Context<State = Record<string, any>> = RoutifyContext<State>;
+
+/**
  * A middleware function that can modify the context or short-circuit the response.
  */
 export type Middleware<State = any> = (
