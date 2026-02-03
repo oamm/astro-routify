@@ -1,5 +1,5 @@
 import { ALLOWED_HTTP_METHODS, HttpMethod } from './HttpMethod';
-import type { Handler } from './defineHandler';
+import type { Handler, Middleware } from './defineHandler';
 import { globalRegistry } from './registry';
 
 /**
@@ -20,6 +20,16 @@ export interface Route {
 	 * The function that handles the request when matched.
 	 */
 	handler: Handler;
+
+	/**
+	 * Optional array of middlewares to run before the handler.
+	 */
+	middlewares?: Middleware[];
+
+	/**
+	 * Optional metadata for the route (e.g., for OpenAPI generation).
+	 */
+	metadata?: Record<string, any>;
 }
 
 /**

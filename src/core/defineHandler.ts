@@ -3,13 +3,36 @@ import { internalError, toAstroResponse, isReadableStream, type ResultResponse }
 import { BodyInit } from 'undici';
 
 /**
+ * Enhanced Astro context for Routify.
+ */
+export interface RoutifyContext extends APIContext {
+    /**
+     * Parsed query parameters from the URL.
+     */
+    query: Record<string, string>;
+
+    /**
+     * Shared data container for middlewares and handlers (e.g., validation results).
+     */
+    data: Record<string, any>;
+}
+
+/**
+ * A middleware function that can modify the context or short-circuit the response.
+ */
+export type Middleware = (
+    ctx: RoutifyContext,
+    next: () => Promise<Response>
+) => Promise<Response> | Response;
+
+/**
  * A flexible route handler that can return:
  * - a native `Response` object,
  * - a structured `ResultResponse` object,
  * - or a file stream (Blob, ArrayBuffer, or ReadableStream).
  */
 export type Handler = (
-    ctx: APIContext
+    ctx: RoutifyContext
 ) => Promise<ResultResponse | Response> | ResultResponse | Response;
 
 /**
@@ -45,7 +68,7 @@ export function defineHandler(handler: Handler): APIRoute {
         try {
             logRequest(ctx);
 
-            const result = await handler(ctx);
+            const result = await handler(ctx as RoutifyContext);
 
             // Native Response shortcut
             if (result instanceof Response) {

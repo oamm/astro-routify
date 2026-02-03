@@ -1,5 +1,5 @@
 import { HttpMethod } from './HttpMethod';
-import type { Handler } from './defineHandler';
+import type { Route } from './defineRoute';
 
 interface RegexChild {
 	regex: RegExp;
@@ -14,32 +14,32 @@ interface TrieNode {
 	paramName?: string;
 	wildcardChild?: TrieNode;
 	catchAllChild?: TrieNode;
-	handlers: Map<HttpMethod, Handler>;
+	routes: Map<HttpMethod, Route>;
 }
 
 interface RouteMatch {
-	handler: Handler | null;
+	route: Route | null;
 	allowed?: HttpMethod[];
 	params: Record<string, string | undefined>;
 }
 
 export class RouteTrie {
-	private readonly root: TrieNode = { children: new Map(), handlers: new Map() };
+	private readonly root: TrieNode = { children: new Map(), routes: new Map() };
 
-	insert(path: string, method: HttpMethod, handler: Handler): void {
-		const segments = this.segmentize(path);
+	insert(route: Route): void {
+		const segments = this.segmentize(route.path);
 		let node = this.root;
 
 		for (const segment of segments) {
 			if (segment === '**') {
 				if (!node.catchAllChild) {
-					node.catchAllChild = { children: new Map(), handlers: new Map() };
+					node.catchAllChild = { children: new Map(), routes: new Map() };
 				}
 				node = node.catchAllChild;
 				break;
 			} else if (segment === '*') {
 				if (!node.wildcardChild) {
-					node.wildcardChild = { children: new Map(), handlers: new Map() };
+					node.wildcardChild = { children: new Map(), routes: new Map() };
 				}
 				node = node.wildcardChild;
 			} else if (segment.startsWith(':')) {
@@ -54,7 +54,7 @@ export class RouteTrie {
 					)?.node;
 
 					if (!regexNode) {
-						regexNode = { children: new Map(), handlers: new Map() };
+						regexNode = { children: new Map(), routes: new Map() };
 						node.regexChildren.push({
 							regex: new RegExp(regexStr),
 							paramName,
@@ -65,19 +65,19 @@ export class RouteTrie {
 				} else {
 					const paramName = segment.slice(1);
 					if (!node.paramChild) {
-						node.paramChild = { children: new Map(), handlers: new Map(), paramName };
+						node.paramChild = { children: new Map(), routes: new Map(), paramName };
 					}
 					node = node.paramChild;
 				}
 			} else {
 				if (!node.children.has(segment)) {
-					node.children.set(segment, { children: new Map(), handlers: new Map() });
+					node.children.set(segment, { children: new Map(), routes: new Map() });
 				}
 				node = node.children.get(segment)!;
 			}
 		}
 
-		node.handlers.set(method, handler);
+		node.routes.set(route.method, route);
 	}
 
 	find(path: string, method: HttpMethod): RouteMatch {
@@ -92,16 +92,16 @@ export class RouteTrie {
 		method: HttpMethod
 	): RouteMatch {
 		if (index === segments.length) {
-			let handler = node.handlers.get(method) ?? null;
-			let allowed = handler ? undefined : [...node.handlers.keys()];
+			let route = node.routes.get(method) ?? null;
+			let allowed = route ? undefined : [...node.routes.keys()];
 
-			// If no handler here, check if there's a catch-all that matches "empty" remaining
-			if (!handler && node.catchAllChild) {
-				handler = node.catchAllChild.handlers.get(method) ?? null;
-				allowed = handler ? undefined : [...node.catchAllChild.handlers.keys()];
+			// If no route here, check if there's a catch-all that matches "empty" remaining
+			if (!route && node.catchAllChild) {
+				route = node.catchAllChild.routes.get(method) ?? null;
+				allowed = route ? undefined : [...node.catchAllChild.routes.keys()];
 			}
 
-			return { handler, allowed, params: {} };
+			return { route, allowed, params: {} };
 		}
 
 		const segment = segments[index];
@@ -110,7 +110,7 @@ export class RouteTrie {
 		const staticChild = node.children.get(segment);
 		if (staticChild) {
 			const match = this.matchNode(staticChild, segments, index + 1, method);
-			if (match.handler || (match.allowed && match.allowed.length > 0)) return match;
+			if (match.route || (match.allowed && match.allowed.length > 0)) return match;
 		}
 
 		// 2. Regex Match
@@ -118,7 +118,7 @@ export class RouteTrie {
 			for (const rc of node.regexChildren) {
 				if (rc.regex.test(segment)) {
 					const match = this.matchNode(rc.node, segments, index + 1, method);
-					if (match.handler || (match.allowed && match.allowed.length > 0)) {
+					if (match.route || (match.allowed && match.allowed.length > 0)) {
 						match.params[rc.paramName] = segment;
 						return match;
 					}
@@ -129,7 +129,7 @@ export class RouteTrie {
 		// 3. Param Match
 		if (node.paramChild) {
 			const match = this.matchNode(node.paramChild, segments, index + 1, method);
-			if (match.handler || (match.allowed && match.allowed.length > 0)) {
+			if (match.route || (match.allowed && match.allowed.length > 0)) {
 				match.params[node.paramChild.paramName!] = segment;
 				return match;
 			}
@@ -138,20 +138,20 @@ export class RouteTrie {
 		// 4. Wildcard Match (*)
 		if (node.wildcardChild) {
 			const match = this.matchNode(node.wildcardChild, segments, index + 1, method);
-			if (match.handler || (match.allowed && match.allowed.length > 0)) return match;
+			if (match.route || (match.allowed && match.allowed.length > 0)) return match;
 		}
 
 		// 5. Catch-all Match (**)
 		if (node.catchAllChild) {
-			const handler = node.catchAllChild.handlers.get(method) ?? null;
+			const route = node.catchAllChild.routes.get(method) ?? null;
 			return {
-				handler,
-				allowed: handler ? undefined : [...node.catchAllChild.handlers.keys()],
+				route,
+				allowed: route ? undefined : [...node.catchAllChild.routes.keys()],
 				params: {},
 			};
 		}
 
-		return { handler: null, params: {} };
+		return { route: null, params: {} };
 	}
 
 	private segmentize(path: string): string[] {

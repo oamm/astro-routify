@@ -4,6 +4,33 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.4.0] – 2026-02-02
+
+### ✨ Added
+- **Middleware Support**:
+    - Global, group-level, and route-level middleware.
+    - Support for `next()` to continue or short-circuit requests.
+    - `RouterBuilder.use()` and `RouteGroup.use()`.
+- **Request Validation**:
+    - `validate()` middleware compatible with Zod and other schema libraries.
+    - Automatic JSON body parsing and validation.
+- **Security Middlewares**:
+    - `cors()` middleware for handling Cross-Origin Resource Sharing.
+    - `securityHeaders()` middleware for essential security headers (Helmet-like).
+- **Enhanced Context**:
+    - `ctx.query`: Parsed query parameters.
+    - `ctx.data`: Shared data container for middlewares and handlers.
+- **Centralized Error Handling**:
+    - `onError` hook in `RouterOptions`.
+- **Automatic OpenAPI Generation**:
+    - `generateOpenAPI()` utility to generate Swagger/OpenAPI 3.0 specs.
+- **Improved Response Helpers**:
+    - `json()` helper for returning JSON with custom status codes.
+
+### 🛠 Changed
+- `RouterBuilder` and `RouteGroup` methods now support multiple arguments for middlewares.
+- `defineRouter` now automatically wraps handlers with `defineHandler` for consistent logging.
+
 ## [1.3.0] – 2026-02-02
 
 ### ✨ Added

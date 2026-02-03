@@ -108,6 +108,15 @@ export const tooManyRequests = <T = string>(
 ) => createResponse(429, body, headers);
 
 /**
+ * Returns a response with JSON body and specified status.
+ */
+export const json = (
+    body: any,
+    status: number = 200,
+    headers?: HeadersInit
+) => createResponse(status, body, headers);
+
+/**
  * 500 Internal Server Error
  *
  * In production, you might want to avoid leaking error details.

@@ -1,6 +1,6 @@
 import { HttpMethod } from './HttpMethod';
 import { defineRoute, type Route } from './defineRoute';
-import { Handler } from "./defineHandler";
+import { Middleware } from "./defineHandler";
 import { globalRegistry } from './registry';
 
 /**
@@ -17,6 +17,7 @@ import { globalRegistry } from './registry';
 export class RouteGroup {
     private basePath: string;
     private routes: Route[] = [];
+    private middlewares: Middleware[] = [];
 
     /**
      * Creates a new route group with the specified base path.
@@ -36,53 +37,69 @@ export class RouteGroup {
     }
 
     /**
+     * Adds a middleware to all routes in this group.
+     * 
+     * @param middleware - The middleware function to add
+     * @returns The current group instance
+     */
+    use(middleware: Middleware): this {
+        this.middlewares.push(middleware);
+        // Apply to already registered routes in this group
+        for (const route of this.routes) {
+            if (!route.middlewares) route.middlewares = [];
+            route.middlewares.push(middleware);
+        }
+        return this;
+    }
+
+    /**
      * Registers a GET route under the group's base path.
      *
      * @param path - Path relative to the base path (e.g. "/:id")
-     * @param handler - The handler function for this route
+     * @param handlers - Middleware(s) followed by a handler function
      */
-    addGet(path: string, handler: Handler): this {
-        return this.add(HttpMethod.GET, path, handler);
+    addGet(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.GET, path, ...handlers);
     }
 
     /**
      * Registers a POST route under the group's base path.
      *
      * @param path - Path relative to the base path
-     * @param handler - The handler function for this route
+     * @param handlers - Middleware(s) followed by a handler function
      */
-    addPost(path: string, handler: Handler): this {
-        return this.add(HttpMethod.POST, path, handler);
+    addPost(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.POST, path, ...handlers);
     }
 
     /**
      * Registers a PUT route under the group's base path.
      *
      * @param path - Path relative to the base path
-     * @param handler - The handler function for this route
+     * @param handlers - Middleware(s) followed by a handler function
      */
-    addPut(path: string, handler: Handler): this {
-        return this.add(HttpMethod.PUT, path, handler);
+    addPut(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.PUT, path, ...handlers);
     }
 
     /**
      * Registers a DELETE route under the group's base path.
      *
      * @param path - Path relative to the base path
-     * @param handler - The handler function for this route
+     * @param handlers - Middleware(s) followed by a handler function
      */
-    addDelete(path: string, handler: Handler): this {
-        return this.add(HttpMethod.DELETE, path, handler);
+    addDelete(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.DELETE, path, ...handlers);
     }
 
     /**
      * Registers a PATCH route under the group's base path.
      *
      * @param path - Path relative to the base path
-     * @param handler - The handler function for this route
+     * @param handlers - Middleware(s) followed by a handler function
      */
-    addPatch(path: string, handler: Handler): this {
-        return this.add(HttpMethod.PATCH, path, handler);
+    addPatch(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.PATCH, path, ...handlers);
     }
 
     /**
@@ -90,13 +107,25 @@ export class RouteGroup {
      * 
      * @param method - HTTP verb
      * @param path - Path relative to the base path
-     * @param handler - The handler function for this route
+     * @param args - Middleware(s) and handler
      * @returns The current group instance
      */
-    add(method: HttpMethod, path: string, handler: Handler): this {
+    add(method: HttpMethod, path: string, ...args: any[]): this {
+        let metadata: Record<string, any> | undefined;
+        if (args.length > 1 && typeof args[args.length - 1] === 'object' && typeof args[args.length - 2] === 'function') {
+            metadata = args.pop();
+        }
+        const handler = args.pop();
+        const middlewares = args;
         const normalizedPath = path.startsWith('/') ? path : `/${path}`;
         this.routes.push(
-            defineRoute(method, `${this.basePath}${normalizedPath}`, handler)
+            defineRoute({
+                method,
+                path: `${this.basePath}${normalizedPath}`,
+                handler,
+                middlewares: [...this.middlewares, ...middlewares],
+                metadata
+            })
         );
         return this;
     }

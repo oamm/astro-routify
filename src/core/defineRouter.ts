@@ -1,6 +1,6 @@
-import type { APIContext, APIRoute } from 'astro';
-import { defineHandler } from './defineHandler';
-import { methodNotAllowed, notFound, toAstroResponse } from './responseHelpers';
+import type { APIRoute } from 'astro';
+import { defineHandler, type RoutifyContext } from './defineHandler';
+import { internalError, methodNotAllowed, notFound, toAstroResponse } from './responseHelpers';
 import { RouteTrie } from './RouteTrie';
 import type { Route } from './defineRoute';
 import { normalizeMethod } from './HttpMethod';
@@ -25,6 +25,11 @@ export interface RouterOptions {
      * Useful during development to trace which route is being matched.
      */
     debug?: boolean;
+
+    /**
+     * Custom error handler for the router.
+     */
+    onError?: (error: unknown, ctx: RoutifyContext) => ReturnType<typeof internalError> | Response;
 }
 
 /**
@@ -53,7 +58,7 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
     const trie = new RouteTrie();
 
     for (const route of routes) {
-        trie.insert(route.path, route.method, route.handler);
+        trie.insert(route);
     }
 
     let basePath = options.basePath ?? '/api';
@@ -67,38 +72,39 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
         basePath = '';
     }
 
-    return async (ctx: APIContext): Promise<Response> => {
-        const url = new URL(ctx.request.url);
+    const handler = defineHandler(async (routifyCtx: RoutifyContext): Promise<Response> => {
+        const url = new URL(routifyCtx.request.url);
         const pathname = url.pathname;
+
+        routifyCtx.query = Object.fromEntries(url.searchParams.entries());
+        routifyCtx.data = {};
 
         let path = pathname;
         if (basePath !== '') {
             if (!pathname.startsWith(basePath)) {
-                const notFoundHandler = options.onNotFound ? options.onNotFound() : notFound('Not Found');
-                return toAstroResponse(notFoundHandler);
+                return toAstroResponse(options.onNotFound ? options.onNotFound() : notFound('Not Found'));
             }
 
             const nextChar = pathname.charAt(basePath.length);
             if (nextChar !== '' && nextChar !== '/') {
-                const notFoundHandler = options.onNotFound ? options.onNotFound() : notFound('Not Found');
-                return toAstroResponse(notFoundHandler);
+                return toAstroResponse(options.onNotFound ? options.onNotFound() : notFound('Not Found'));
             }
 
             path = pathname.slice(basePath.length);
         }
 
-        const method = normalizeMethod(ctx.request.method);
-        const { handler, allowed, params } = trie.find(path, method);
+        const method = normalizeMethod(routifyCtx.request.method);
+        const { route, allowed, params } = trie.find(path, method);
 
         if (options.debug) {
             console.log(
                 `[RouterBuilder] ${method} ${path} -> ${
-                    handler ? 'matched' : allowed && allowed.length ? '405' : '404'
+                    route ? 'matched' : allowed && allowed.length ? '405' : '404'
                 }`
             );
         }
 
-        if (!handler) {
+        if (!route) {
             // Method exists but not allowed for this route
             if (allowed && allowed.length) {
                 return toAstroResponse(
@@ -108,11 +114,40 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
                 );
             }
             // No route matched at all → 404
-            const notFoundHandler = options.onNotFound ? options.onNotFound() : notFound('Not Found');
-            return toAstroResponse(notFoundHandler);
+            return toAstroResponse(options.onNotFound ? options.onNotFound() : notFound('Not Found'));
         }
 
-        // Match found → delegate to handler
-        return defineHandler(handler)({ ...ctx, params: { ...ctx.params, ...params } });
-    };
+        // Match found → delegate to handler with middlewares
+        routifyCtx.params = { ...routifyCtx.params, ...params };
+
+        try {
+            const middlewares = route.middlewares || [];
+            
+            let index = -1;
+            const next = async (): Promise<Response> => {
+                index++;
+                if (index < middlewares.length) {
+                    const mw = middlewares[index];
+                    const res = await mw(routifyCtx, next);
+                    return res instanceof Response ? res : toAstroResponse(res as any);
+                } else {
+                    const result = await route.handler(routifyCtx);
+                    return result instanceof Response ? result : toAstroResponse(result);
+                }
+            };
+
+            return await next();
+        } catch (err) {
+            if (options.onError) {
+                const errorRes = options.onError(err, routifyCtx);
+                return errorRes instanceof Response ? errorRes : toAstroResponse(errorRes);
+            }
+            throw err;
+        }
+    });
+
+    (handler as any).routes = routes;
+    (handler as any).options = options;
+
+    return handler;
 }

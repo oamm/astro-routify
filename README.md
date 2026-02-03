@@ -92,11 +92,15 @@ endpoint system.
 
 ### `defineRoute()`
 
-Declare a single route:
+Declare a single route. Now supports middlewares and metadata:
 
 ```ts
-defineRoute(HttpMethod.GET, "/users/:id", ({params}) => {
-    return ok({userId: params.id});
+defineRoute({
+    method: 'GET',
+    path: '/users/:id',
+    middlewares: [authMiddleware],
+    metadata: { summary: 'Get user by ID' },
+    handler: ({params}) => ok({userId: params.id})
 });
 ```
 
@@ -141,6 +145,93 @@ When multiple routes could match a path, the router follows a deterministic prio
 3. **Param Match** (e.g., `/p/:id`)
 4. **Wildcard Match** (e.g., `/p/*`)
 5. **Catch-all Match** (e.g., `/**`)
+
+### 🛡️ Middleware & Security
+
+`astro-routify` provides a powerful middleware system and built-in security helpers.
+
+#### 1. Middleware Support
+Middleware can be applied globally, to groups, or to individual routes.
+
+```ts
+const builder = new RouterBuilder();
+
+// Global middleware
+builder.use(async (ctx, next) => {
+    const start = performance.now();
+    const res = await next();
+    console.log(`Duration: ${performance.now() - start}ms`);
+    return res;
+});
+
+// Group middleware
+builder.group('/admin')
+    .use(checkAuth)
+    .addGet('/dashboard', (ctx) => ok('Admin only'));
+
+// Route middleware
+builder.addPost('/user', validate(UserSchema), (ctx) => {
+    return ok(ctx.data.body);
+});
+```
+
+#### 2. Request Validation
+Built-in `validate()` middleware works with Zod, Valibot, or any library implementing a `safeParse` method.
+
+```ts
+import { validate } from 'astro-routify';
+import { z } from 'zod';
+
+const UserSchema = z.object({
+    name: z.string(),
+    email: z.string().email()
+});
+
+builder.addPost('/register', validate({ body: UserSchema }), (ctx) => {
+    const user = ctx.data.body; // Fully typed if using TypeScript correctly
+    return ok(user);
+});
+```
+
+#### 3. Security Middlewares (CORS & Headers)
+Protect your API with `cors()` and `securityHeaders()`.
+
+```ts
+import { cors, securityHeaders } from 'astro-routify';
+
+builder.use(cors({ origin: 'https://example.com' }));
+builder.use(securityHeaders());
+```
+
+### 🛠 Advanced Configuration
+
+#### Centralized Error Handling
+Handle all API errors in one place:
+
+```ts
+export const ALL = createRouter({
+    onError: (err, ctx) => {
+        console.error(err);
+        return json({ error: 'Something went wrong' }, 500);
+    }
+});
+```
+
+#### OpenAPI (Swagger) Generation
+Automatically generate API documentation:
+
+```ts
+import { generateOpenAPI } from 'astro-routify';
+
+const router = builder.build();
+const spec = generateOpenAPI(router, {
+    title: 'My API',
+    version: '1.0.0'
+});
+
+// Serve the spec
+builder.addGet('/openapi.json', () => ok(spec));
+```
 
 > 🧠 `defineRouter()` supports all HTTP methods — but Astro only executes the method you export (`GET`, `POST`, etc.)
 

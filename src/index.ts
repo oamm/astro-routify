@@ -11,4 +11,6 @@ export * from './core/decorators';
 export * from './core/stream';
 export * from './core/streamJsonND';
 export * from './core/streamJsonArray';
+export * from './core/middlewares';
+export * from './core/openapi';
 export type {JsonStreamWriter} from './core/internal/createJsonStreamRoute';

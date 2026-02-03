@@ -1,8 +1,8 @@
 import type {APIRoute} from 'astro';
 import {defineRoute, isRoute, type Route} from './defineRoute';
 import {defineRouter, type RouterOptions} from './defineRouter';
-import {RouteGroup} from './defineGroup';
-import {type Handler} from './defineHandler';
+import {defineGroup, RouteGroup} from './defineGroup';
+import {type Middleware} from './defineHandler';
 import {HttpMethod} from './HttpMethod';
 import {globalRegistry} from './registry';
 
@@ -43,6 +43,8 @@ import {globalRegistry} from './registry';
 export class RouterBuilder {
     private _options: RouterOptions;
     private _routes: Route[] = [];
+    private _groups: RouteGroup[] = [];
+    private _middlewares: Middleware[] = [];
     private _shouldLog = false;
     private static _registerWarned = false;
 
@@ -63,6 +65,30 @@ export class RouterBuilder {
         ) {
             this._shouldLog = true;
         }
+    }
+
+    /**
+     * Adds a global middleware to all routes registered in this builder.
+     * 
+     * @param middleware - The middleware function.
+     * @returns The current builder instance.
+     */
+    use(middleware: Middleware): this {
+        this._middlewares.push(middleware);
+        return this;
+    }
+
+    /**
+     * Creates and adds a new route group to the builder.
+     * 
+     * @param basePath - The base path for the group.
+     * @param configure - Optional callback to configure the group.
+     * @returns The created RouteGroup instance.
+     */
+    group(basePath: string, configure?: (group: RouteGroup) => void): RouteGroup {
+        const group = defineGroup(basePath, configure);
+        this.addGroup(group);
+        return group;
     }
 
     /**
@@ -211,53 +237,53 @@ export class RouterBuilder {
      * @returns The current builder instance (for chaining).
      */
     addGroup(group: RouteGroup): this {
-        this._routes.push(...group.getRoutes());
+        this._groups.push(group);
         return this;
     }
 
     /**
      * Adds a GET route.
      * @param path Route path (e.g., `/items/:id`)
-     * @param handler Request handler function.
+     * @param handlers Middleware(s) followed by a request handler function.
      */
-    addGet(path: string, handler: Handler): this {
-        return this.add(HttpMethod.GET, path, handler);
+    addGet(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.GET, path, ...handlers);
     }
 
     /**
      * Adds a POST route.
      * @param path Route path.
-     * @param handler Request handler function.
+     * @param handlers Middleware(s) followed by a request handler function.
      */
-    addPost(path: string, handler: Handler): this {
-        return this.add(HttpMethod.POST, path, handler);
+    addPost(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.POST, path, ...handlers);
     }
 
     /**
      * Adds a PUT route.
      * @param path Route path.
-     * @param handler Request handler function.
+     * @param handlers Middleware(s) followed by a request handler function.
      */
-    addPut(path: string, handler: Handler): this {
-        return this.add(HttpMethod.PUT, path, handler);
+    addPut(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.PUT, path, ...handlers);
     }
 
     /**
      * Adds a DELETE route.
      * @param path Route path.
-     * @param handler Request handler function.
+     * @param handlers Middleware(s) followed by a request handler function.
      */
-    addDelete(path: string, handler: Handler): this {
-        return this.add(HttpMethod.DELETE, path, handler);
+    addDelete(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.DELETE, path, ...handlers);
     }
 
     /**
      * Adds a PATCH route.
      * @param path Route path.
-     * @param handler Request handler function.
+     * @param handlers Middleware(s) followed by a request handler function.
      */
-    addPatch(path: string, handler: Handler): this {
-        return this.add(HttpMethod.PATCH, path, handler);
+    addPatch(path: string, ...handlers: any[]): this {
+        return this.add(HttpMethod.PATCH, path, ...handlers);
     }
 
     /**
@@ -265,13 +291,25 @@ export class RouterBuilder {
      *
      * @param method The HTTP method.
      * @param subPath Path segment (can be relative or absolute).
-     * @param handler Request handler.
+     * @param args Middleware(s) and handler.
      * @returns The current builder instance (for chaining).
      */
-    private add(method: HttpMethod, subPath: string, handler: Handler): this {
+    private add(method: HttpMethod, subPath: string, ...args: any[]): this {
+        let metadata: Record<string, any> | undefined;
+        if (args.length > 1 && typeof args[args.length - 1] === 'object' && typeof args[args.length - 2] === 'function') {
+            metadata = args.pop();
+        }
+        const handler = args.pop();
+        const middlewares = args;
         const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
         this._routes.push(
-            defineRoute(method, normalizedPath, handler)
+            defineRoute({
+                method,
+                path: normalizedPath,
+                handler,
+                middlewares,
+                metadata
+            })
         );
         return this;
     }
@@ -288,7 +326,20 @@ export class RouterBuilder {
         if (this._shouldLog) {
             this.logRoutes();
         }
-        return defineRouter(this._routes, this._options);
+
+        // Collect all routes from builder and groups
+        const allRoutes = [...this._routes];
+        for (const group of this._groups) {
+            allRoutes.push(...group.getRoutes());
+        }
+
+        // Apply global middlewares to all routes before building
+        const finalRoutes = allRoutes.map(route => ({
+            ...route,
+            middlewares: [...this._middlewares, ...(route.middlewares || [])]
+        }));
+
+        return defineRouter(finalRoutes, this._options);
     }
 }
 
