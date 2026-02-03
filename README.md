@@ -16,6 +16,21 @@ Define API routes using clean, flat structures — no folders or boilerplate log
 npm install astro-routify
 ```
 
+## 📋 Contents
+- [Installing](#installing)
+- [Quickstart](#quickstart)
+- [Mental Model](#mental-model)
+- [Which API should I use?](#which-api-should-i-use)
+- [Core Concepts](#core-concepts)
+- [Advanced Matching](#advanced-matching)
+- [Middleware & Security](#middleware--security)
+- [Single-entry Routing](#single-entry-routing)
+- [Auto-Discovery & Scaling](#auto-discovery--scaling)
+- [Advanced Features](#advanced-features)
+- [Response Helpers](#response-helpers)
+- [Performance](#performance)
+- [Non-goals](#non-goals)
+
 ## ⚡️ Quickstart
 
 ```ts
@@ -55,6 +70,32 @@ builder
 export const ALL = builder.build(); // catch-all
 ```
 
+## 🧠 Mental Model
+
+`astro-routify` compiles your route definitions into a **Trie (prefix tree)** at startup.
+At runtime, each request performs a deterministic path + method lookup and executes the matched handler inside Astro’s native API context.
+
+```text
+[Astro Endpoint]
+       |
+   astro-routify
+       |
+   Route Trie
+       |
+    Handler
+```
+
+> ⚡ **Cold-start performance**: Routes are compiled once at startup; there is no per-request route parsing. This makes it ideal for edge and serverless environments.
+
+### Which API should I use?
+
+| Use case | Recommended |
+|----------|-------------|
+| Small / explicit APIs | `defineRouter()` |
+| Single-entry / catch-all | `RouterBuilder` |
+| Vertical slices (glob) | `addModules()` |
+| Large apps / plugins | Global registry |
+
 ## 💡 Full Example
 
 You can find an implementation example in the [astro-routify-example](https://github.com/oamm/astro-routify-example)
@@ -76,14 +117,10 @@ endpoint system.
 - 🧩 Use middleware, access cookies, headers, and request bodies exactly as you would in a normal Astro endpoint.
 - ✅ Flat-file, code-based routing (no folders required)
 - ✅ Dynamic segments (`:id`)
-- ✅ ALL-mode for monolithic routing (`RouterBuilder`)
+- ✅ ALL-mode for single-entry routing (`RouterBuilder`)
 - ✅ Built-in response helpers (`ok`, `created`, etc.)
 - ✅ Trie-based matcher for fast route lookup
 - ✅ Fully typed — no magic strings
-- 🔁 **Streaming support**
-    - `stream()` — raw streaming with backpressure support (e.g. SSE, logs, custom protocols)
-    - `streamJsonND()` — newline-delimited JSON streaming (NDJSON)
-    - `streamJsonArray()` — server-side streamed JSON arrays
 
 > 🔄 See [CHANGELOG.md](./CHANGELOG.md) for recent updates and improvements.
 ---
@@ -92,7 +129,9 @@ endpoint system.
 
 ### `defineRoute()`
 
-Declare a single route. Now supports middlewares and metadata:
+Declare a single route. Now supports middlewares and metadata. 
+
+> 💡 `defineRoute` supports two signatures: you can pass a full `Route` object, or specify `method`, `path`, and `handler` as separate arguments.
 
 ```ts
 defineRoute({
@@ -203,9 +242,7 @@ builder.use(cors({ origin: 'https://example.com' }));
 builder.use(securityHeaders());
 ```
 
-### 🛠 Advanced Configuration
-
-#### Centralized Error Handling
+### Centralized Error Handling
 Handle all API errors in one place:
 
 ```ts
@@ -217,27 +254,11 @@ export const ALL = createRouter({
 });
 ```
 
-#### OpenAPI (Swagger) Generation
-Automatically generate API documentation:
-
-```ts
-import { generateOpenAPI } from 'astro-routify';
-
-const router = builder.build();
-const spec = generateOpenAPI(router, {
-    title: 'My API',
-    version: '1.0.0'
-});
-
-// Serve the spec
-builder.addGet('/openapi.json', () => ok(spec));
-```
-
 > 🧠 `defineRouter()` supports all HTTP methods — but Astro only executes the method you export (`GET`, `POST`, etc.)
 
-### `RouterBuilder` (Catch-All & Fluent Builder)
+## 🧱 Single-entry Routing
 
-Use `RouterBuilder` when you want to build routes dynamically, catch all HTTP methods via `ALL`, or organize routes more
+Use `RouterBuilder` when you want to build routes dynamically, catch-all HTTP methods via `ALL`, or organize routes more
 fluently with helpers.
 
 ```ts
@@ -253,10 +274,12 @@ builder
 export const ALL = builder.build();
 ```
 
-#### 🏗 Vertical Slices & Auto-Discovery
+## 📂 Auto-Discovery & Scaling
 
 To avoid a long list of manual registrations, you can use `addModules` combined with Vite's `import.meta.glob`. This allows
 you to define routes anywhere in your project (near your components) and have them automatically registered.
+
+> 💡 When passing the glob result directly to the router, you **don't** need to set `autoRegister: true` in your routes. The router will automatically discover all exported routes from the modules.
 
 ```ts
 // src/pages/api/[...all].ts
@@ -274,7 +297,7 @@ export const ALL = createRouter(
 );
 ```
 
-#### 🛡️ Agnostic Auto-Registration (Global Registry)
+### 🛡️ Agnostic Auto-Registration (Global Registry)
 
 If you want to avoid passing glob results or knowing the relative path to your routes, you can use the **global registry**. By setting the `autoRegister` flag or using **decorators**, routes will register themselves as soon as their module is loaded.
 
@@ -301,27 +324,57 @@ class UserRoutes {
 
 ##### 2. Initialize the router agnostically
 
-In your catch-all endpoint, simply call `import.meta.glob` to trigger the loading of your route files, and then call `createRouter()` without module arguments.
+In your catch-all endpoint (e.g., `src/pages/api/[...slug].ts`), you need to trigger the loading of your route files.
+
+> **Why is the glob needed?**
+> Even with auto-registration, Vite only executes files that are explicitly imported. The `import.meta.glob` call below tells Vite to find and execute your route files so they can register themselves in the global registry. Without this, the registry would remain empty.
+
+###### Using `createRouter()` (Recommended)
+
+The `createRouter` helper is the easiest way to get started. It automatically picks up everything from the global registry.
 
 ```ts
-// src/pages/api/[...all].ts
+// src/pages/api/[...slug].ts
 import { createRouter } from 'astro-routify';
 
-// Trigger loading of all route files (agnostic of relative path using /src root alias)
+// 1. Trigger loading of all route files.
+// We don't need to pass the result to createRouter, but we must call it.
 import.meta.glob('/src/**/*.routes.ts', { eager: true });
 
-// createRouter() will automatically include all auto-registered routes
-export const ALL = createRouter({ debug: true });
+// 2. createRouter() will automatically pick up everything.
+export const ALL = createRouter({ 
+    debug: true,
+    basePath: '/api' 
+});
 ```
 
-You can also use the global `RouterBuilder` instance directly:
+###### Using `RouterBuilder`
+
+If you need more control, you can use `RouterBuilder` manually. You must explicitly call `.addRegistered()` to pull in routes from the global registry.
 
 ```ts
-import { RouterBuilder } from 'astro-routify';
+// src/pages/api/[...slug].ts
+import { RouterBuilder, notFound, internalError } from 'astro-routify';
+
+// 1. Load your routes
+// This triggers Vite to execute the files and populate the global registry.
 import.meta.glob('/src/**/*.routes.ts', { eager: true });
 
-export const ALL = RouterBuilder.global.build();
+// 2. Construct the builder with optional configuration
+const builder = new RouterBuilder({ 
+    basePath: '/api',
+    debug: true, // Enable logging
+    onNotFound: () => notFound('Custom 404'),
+    onError: (err) => internalError(err)
+});
+
+// 3. Add auto-registered routes and build
+export const ALL = builder
+    .addRegistered()
+    .build();
 ```
+
+> 💡 **The Catch-All Slug**: The filename `[...slug].ts` tells Astro to match any path under that directory. For example, if placed in `src/pages/api/[...slug].ts`, it matches `/api/users`, `/api/ping`, etc. `astro-routify` then takes over and matches the rest of the path against your defined routes.
 
 You can also still manually add routes or groups:
 
@@ -331,6 +384,69 @@ const users = defineGroup("/users")
 
 builder.addGroup(users);
 builder.addGet("/ping", () => ok("pong"));
+```
+
+## ⚡ Advanced Features
+
+### 🔄 Streaming responses
+
+#### Raw stream (e.g., Server-Sent Events)
+
+```ts
+stream('/clock', async ({response}) => {
+    const timer = setInterval(() => {
+        response.write(new Date().toISOString());
+    }, 1000);
+
+    setTimeout(() => {
+        clearInterval(timer);
+        response.close();
+    }, 5000);
+});
+
+```
+
+#### JSON NDStream (newline-delimited)
+
+```ts
+
+streamJsonND('/updates', async ({response}) => {
+    response.send({step: 1});
+    await delay(500);
+    response.send({step: 2});
+    response.close();
+});
+
+```
+
+#### JSON Array stream
+
+```ts
+
+streamJsonArray('/items', async ({response}) => {
+    for (let i = 0; i < 3; i++) {
+        response.send({id: i});
+    }
+    response.close();
+});
+
+```
+
+### 📖 OpenAPI (Swagger) Generation
+
+Automatically generate API documentation:
+
+```ts
+import { generateOpenAPI } from 'astro-routify';
+
+const router = builder.build();
+const spec = generateOpenAPI(router, {
+    title: 'My API',
+    version: '1.0.0'
+});
+
+// Serve the spec
+builder.addGet('/openapi.json', () => ok(spec));
 ```
 
 > 🔁 While `.register()` is still available, it's **deprecated** in favor of `.addGroup()` and `.addRoute()` for better
@@ -381,49 +497,7 @@ internalError(err);         // 500
 fileResponse(content, "application/pdf", "report.pdf"); // sets Content-Type and Content-Disposition
 ```
 
-### 🔄 Streaming responses
-
-#### Raw stream (e.g., Server-Sent Events)
-
-```ts
-stream('/clock', async ({response}) => {
-    const timer = setInterval(() => {
-        response.write(new Date().toISOString());
-    }, 1000);
-
-    setTimeout(() => {
-        clearInterval(timer);
-        response.close();
-    }, 5000);
-});
-
-```
-
-#### JSON NDStream (newline-delimited)
-
-```ts
-
-streamJsonND('/updates', async ({response}) => {
-    response.send({step: 1});
-    await delay(500);
-    response.send({step: 2});
-    response.close();
-});
-
-```
-
-#### JSON Array stream
-
-```ts
-
-streamJsonArray('/items', async ({response}) => {
-    for (let i = 0; i < 3; i++) {
-        response.send({id: i});
-    }
-    response.close();
-});
-
-```
+---
 
 ---
 
@@ -563,6 +637,15 @@ Results may vary slightly on different hardware.
 ```
 
 > ⚡ Performance stays consistently fast even with 10k+ routes
+
+---
+
+## 🎯 Non-goals
+
+- **Not a replacement for Astro pages**: Use it for APIs, not for HTML rendering.
+- **No runtime file watching**: Route discovery happens at startup.
+- **No opinionated auth or ORM layer**: It's a router, not a framework.
+- **No framework lock-in**: Works with any library (Zod, Valibot, etc.).
 
 ---
 
