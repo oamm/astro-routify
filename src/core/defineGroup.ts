@@ -168,6 +168,9 @@ export function defineGroup(
     if (configure) configure(group);
     if (autoRegister) {
         globalRegistry.register(group);
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development' || (import.meta as any).env?.DEV) {
+            console.log(`\x1b[36m[astro-routify]\x1b[0m group registered: \x1b[33m${group.getBasePath()}\x1b[0m`);
+        }
     }
     return group;
 }

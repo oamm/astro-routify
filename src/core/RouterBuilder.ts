@@ -55,13 +55,14 @@ export class RouterBuilder {
 
     constructor(options?: RouterOptions) {
         this._options = {
-            basePath: 'api',
+            basePath: '/api',
             ...options,
         };
 
         if (
             (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
-            (import.meta as any).env?.DEV
+            (import.meta as any).env?.DEV ||
+            this._options.debug
         ) {
             this._shouldLog = true;
         }
@@ -99,6 +100,10 @@ export class RouterBuilder {
      */
     addRegistered(): this {
         const items = globalRegistry.getItems();
+
+        if (this._shouldLog && items.length > 0) {
+            console.log(`\x1b[36m[astro-routify]\x1b[0m Auto-registering ${items.length} items from global registry...`);
+        }
 
         const lastRouteIndex = new Map<string, number>();
         const routesByKey = new Map<string, Route>();
@@ -140,7 +145,13 @@ export class RouterBuilder {
      * @returns The current builder instance.
      */
     addModules(modules: Record<string, any>): this {
-        Object.keys(modules).sort().forEach((key) => {
+        const keys = Object.keys(modules).sort();
+        
+        if (this._shouldLog && keys.length > 0) {
+            console.log(`\x1b[36m[astro-routify]\x1b[0m Exploring ${keys.length} modules for routes...`);
+        }
+
+        keys.forEach((key) => {
             const m = modules[key];
             if (m && typeof m === 'object' && (m as any)._routifyType === 'group') {
                 this.addGroup(m as RouteGroup);
@@ -173,14 +184,31 @@ export class RouterBuilder {
      *
      * @returns The current builder instance.
      */
-    logRoutes(): this {
-        console.log(`\x1b[36m[RouterBuilder]\x1b[0m Registered routes:`);
+    logRoutes(allRoutes?: Route[]): this {
+        const basePath = this._options.basePath || '/api';
+        const normalizedBasePath = basePath.startsWith('/') ? basePath : `/${basePath}`;
+
+        console.log(`\x1b[36m[astro-routify]\x1b[0m Registered routes (basePath: \x1b[33m${normalizedBasePath}\x1b[0m):`);
+        
+        const routesToLog = allRoutes || [...this._routes];
+        if (!allRoutes) {
+            for (const group of this._groups) {
+                routesToLog.push(...group.getRoutes());
+            }
+        }
+
+        if (routesToLog.length === 0) {
+            console.log(`  \x1b[33m(no routes registered)\x1b[0m`);
+            return this;
+        }
+
         const limit = 30;
-        this._routes.slice(0, limit).forEach((r) => {
-            console.log(`  \x1b[32m${r.method.padEnd(7)}\x1b[0m ${r.path}`);
+        routesToLog.slice(0, limit).forEach((r) => {
+            const fullPath = normalizedBasePath === '/' ? r.path : `${normalizedBasePath}${r.path}`;
+            console.log(`  \x1b[32m${r.method.padEnd(7)}\x1b[0m ${fullPath}`);
         });
-        if (this._routes.length > limit) {
-            console.log(`  ... and ${this._routes.length - limit} more`);
+        if (routesToLog.length > limit) {
+            console.log(`  ... and ${routesToLog.length - limit} more`);
         }
         return this;
     }
@@ -346,26 +374,24 @@ export class RouterBuilder {
      * @returns A fully resolved Astro route handler.
      */
     build() {
-        if (this._shouldLog) {
-            this.logRoutes();
-        }
-
         // Collect all routes from builder and groups
         const allRoutes = [...this._routes];
         for (const group of this._groups) {
             allRoutes.push(...group.getRoutes());
         }
 
-        // Detect duplicates in production (warnings)
-        if (!this._shouldLog) {
-            const seen = new Set<string>();
-            for (const route of allRoutes) {
-                const key = `${route.method}:${route.path}`;
-                if (seen.has(key)) {
-                    console.warn(`[RouterBuilder] Duplicate route detected: ${key}. The last one will be used.`);
-                }
-                seen.add(key);
+        if (this._shouldLog) {
+            this.logRoutes(allRoutes);
+        }
+
+        // Detect duplicates
+        const seen = new Set<string>();
+        for (const route of allRoutes) {
+            const key = `${route.method}:${route.path}`;
+            if (seen.has(key)) {
+                console.warn(`\x1b[33m[astro-routify]\x1b[0m Duplicate route detected: ${key}. The last one will be used.`);
             }
+            seen.add(key);
         }
 
         // Apply global middlewares to all routes before building
@@ -406,7 +432,7 @@ export function createRouter(
     let modules: Record<string, any> | undefined;
     let finalOptions: RouterOptions | undefined;
 
-    if (modulesOrOptions && !('basePath' in modulesOrOptions || 'onNotFound' in modulesOrOptions || 'debug' in modulesOrOptions)) {
+    if (modulesOrOptions && typeof modulesOrOptions === 'object' && !('basePath' in modulesOrOptions || 'onNotFound' in modulesOrOptions || 'debug' in modulesOrOptions || 'onError' in modulesOrOptions)) {
         modules = modulesOrOptions as Record<string, any>;
         finalOptions = options;
     } else {

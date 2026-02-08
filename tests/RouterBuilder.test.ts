@@ -133,7 +133,7 @@ describe('RouterBuilder', () => {
         builder.addGet('/test', () => ok('ok'));
         builder.build();
 
-        expect(spy.mock.calls[0][0]).toMatch(/\[RouterBuilder\].*Registered routes:/);
+        expect(spy.mock.calls[0][0]).toMatch(/\[astro-routify\].*Registered routes/);
         expect(spy.mock.calls[1][0]).toMatch(/GET/);
 
         process.env.NODE_ENV = originalEnv;
@@ -141,14 +141,15 @@ describe('RouterBuilder', () => {
     });
 
     it('should trace matches in debug mode', async () => {
-        const spy = vi.spyOn(console, 'log').mockImplementation(() => {
+        const spy = vi.spyOn(console, 'info').mockImplementation(() => {
         });
         const builder = new RouterBuilder({debug: true});
         builder.addGet('/debug', () => ok('ok'));
         const router = builder.build();
 
         await router(createContext('http://localhost/api/debug', 'GET'));
-        expect(spy).toHaveBeenCalledWith(expect.stringContaining('[RouterBuilder] GET /debug -> matched'));
+        expect(spy).toHaveBeenCalledWith(expect.stringContaining('GET /debug ->'));
+        expect(spy).toHaveBeenCalledWith(expect.stringContaining('matched'));
         spy.mockRestore();
     });
 });

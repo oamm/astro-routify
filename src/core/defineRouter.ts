@@ -111,9 +111,9 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
         const { route, allowed, params } = trie.find(path, method);
 
         if (options.debug) {
-            console.log(
-                `[RouterBuilder] ${method} ${path} -> ${
-                    route ? 'matched' : allowed && allowed.length ? '405' : '404'
+            console.info(
+                `\x1b[36m[astro-routify]\x1b[0m ${method} ${path} -> ${
+                    route ? '\x1b[32mmatched\x1b[0m' : allowed && allowed.length ? '\x1b[33m405\x1b[0m' : '\x1b[31m404\x1b[0m'
                 }`
             );
         }

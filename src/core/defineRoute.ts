@@ -94,6 +94,9 @@ export function defineRoute(
 
 	if (autoRegister) {
 		globalRegistry.register(route);
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development' || (import.meta as any).env?.DEV) {
+            console.log(`\x1b[36m[astro-routify]\x1b[0m route registered: \x1b[32m${route.method}\x1b[0m \x1b[33m${route.path}\x1b[0m`);
+        }
 	}
 
 	return route;
