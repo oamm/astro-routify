@@ -16,6 +16,46 @@ Define API routes using clean, flat structures — no folders or boilerplate log
 npm install astro-routify
 ```
 
+## 🔌 Astro Integration (New!)
+
+The easiest way to use `astro-routify` is with our new Astro Integration. It provides **zero-config** auto-registration by scanning your project for route files.
+
+### 1. Add the integration
+
+```ts
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import { routify } from 'astro-routify';
+
+export default defineConfig({
+  integrations: [routify()]
+});
+```
+
+### 2. Create your router
+
+With the integration active, `createRouter` will automatically find and register all your routes. You don't need to import them manually.
+
+```ts
+// src/pages/api/[...route].ts
+import { createRouter } from 'astro-routify';
+
+export const ALL = createRouter({ debug: true });
+```
+
+### 3. Define routes anywhere
+
+Create files matching `**/*.{route,routes}.ts` anywhere in your `src` directory:
+
+```ts
+// src/features/auth/login.route.ts
+import { defineRoute, HttpMethod, ok } from 'astro-routify';
+
+export const Login = defineRoute(HttpMethod.POST, '/auth/login', async () => {
+  return ok({ message: 'Welcome!' });
+}, true); // Use 'true' to auto-register
+```
+
 ## 📋 Contents
 - [Installing](#installing)
 - [Quickstart](#quickstart)
@@ -348,57 +388,48 @@ class UserRoutes {
 
 ##### 2. Initialize the router agnostically
 
-In your catch-all endpoint (e.g., `src/pages/api/[...slug].ts`), you need to trigger the loading of your route files.
+In your catch-all endpoint (e.g., `src/pages/api/[...route].ts`), you need to trigger the loading of your route files.
 
-> **Why is the glob needed?**
-> Even with auto-registration, Vite only executes files that are explicitly imported. The `import.meta.glob` call below tells Vite to find and execute your route files so they can register themselves in the global registry. Without this, the registry would remain empty.
+> **Recommended**: Use the [Astro Integration](#-astro-integration-new) for zero-config setup. The methods below are for manual configuration.
 
 ###### Using `createRouter()` (Recommended)
 
-The `createRouter` helper is the easiest way to get started. It automatically picks up everything from the global registry.
+The `createRouter` helper is the easiest way to get started. It automatically picks up everything from the global registry. It also supports **lazy loading** — if you pass a non-eager glob, modules will be resolved on the first request.
 
 ```ts
-// src/pages/api/[...slug].ts
+// src/pages/api/[...route].ts
 import { createRouter } from 'astro-routify';
 
-// 1. Trigger loading of all route files.
-// We don't need to pass the result to createRouter, but we must call it.
-import.meta.glob('/src/**/*.routes.ts', { eager: true });
-
-// 2. createRouter() will automatically pick up everything.
-export const ALL = createRouter({ 
-    debug: true,
-    basePath: '/api' 
+// Manual way (if not using the Integration):
+// Supports both eager and lazy globs
+export const ALL = createRouter(import.meta.glob('/src/**/*.route.ts'), { 
+    debug: true
 });
 ```
 
 ###### Using `RouterBuilder`
 
-If you need more control, you can use `RouterBuilder` manually. You must explicitly call `.addRegistered()` to pull in routes from the global registry.
+If you need more control, you can use `RouterBuilder` manually. You must explicitly call `.addRegistered()` or `.addModules()` to pull in routes.
 
 ```ts
-// src/pages/api/[...slug].ts
+// src/pages/api/[...route].ts
 import { RouterBuilder, notFound, internalError } from 'astro-routify';
 
-// 1. Load your routes
-// This triggers Vite to execute the files and populate the global registry.
-import.meta.glob('/src/**/*.routes.ts', { eager: true });
-
-// 2. Construct the builder with optional configuration
+// 1. Construct the builder
 const builder = new RouterBuilder({ 
     basePath: '/api',
-    debug: true, // Enable logging
-    onNotFound: () => notFound('Custom 404'),
-    onError: (err) => internalError(err)
+    debug: true
 });
 
-// 3. Add auto-registered routes and build
-export const ALL = builder
-    .addRegistered()
-    .build();
+// 2. Add routes (manual glob support)
+// This can be lazy (default) or eager.
+builder.addModules(import.meta.glob('/src/**/*.route.ts'));
+
+// 3. build() returns the handler
+export const ALL = builder.build();
 ```
 
-> 💡 **The Catch-All Slug**: The filename `[...slug].ts` tells Astro to match any path under that directory. For example, if placed in `src/pages/api/[...slug].ts`, it matches `/api/users`, `/api/ping`, etc. `astro-routify` then takes over and matches the rest of the path against your defined routes.
+> 💡 **The Catch-All Route**: The filename `[...route].ts` tells Astro to match any path under that directory. For example, if placed in `src/pages/api/[...route].ts`, it matches `/api/users`, `/api/ping`, etc. `astro-routify` then takes over and matches the rest of the path against your defined routes.
 
 > ⚠️ In production (non-HMR) builds, duplicate route registrations with the same `method:path` MAY emit warnings and the last registration wins. In development/HMR flows, the registry intentionally preserves history and the builder deduplicates using a last-wins policy.
 

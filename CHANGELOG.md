@@ -4,6 +4,30 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.7.0] – 2026-02-08
+
+### ✨ Added
+- **Astro Integration (`routify`)**: 
+    - New `routify()` integration for "zero-config" setup in `astro.config.mjs`.
+    - Automatically discovers route files matching `**/*.{route,routes}.ts` (configurable).
+    - Injects auto-registration imports into any file calling `createRouter()`.
+- **Lazy Module Support**:
+    - `RouterBuilder.addModules()` and `createRouter()` now support non-eager `import.meta.glob()`.
+    - Modules are resolved asynchronously upon the first request, improving initial build/dev start times.
+- **Robust Global Registry**:
+    - Switched to `Symbol.for('astro-routify.registry')` for the internal registry.
+    - Prevents registration loss when multiple versions of the library are loaded (e.g., in complex pnpm/monorepo setups).
+
+### 🛠 Changed
+- **Improved Diagnostics**:
+    - Standardized logging prefix `[astro-routify]` across the library.
+    - Color-coded matching logs in debug mode (Green: matched, Yellow: 405, Red: 404).
+    - Automatic `basePath` logging when the router starts.
+- **Standardized Defaults**:
+    - `RouterBuilder` and `createRouter` now default to `/api` for `basePath` if not specified.
+
+---
+
 ## [1.5.0] – 2026-02-03
 
 ### ⚠️ Breaking Changes

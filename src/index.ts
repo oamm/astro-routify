@@ -6,6 +6,7 @@ export * from './core/RouteTrie';
 export * from './core/HttpMethod';
 export * from './core/responseHelpers';
 export {RouterBuilder, createRouter} from './core/RouterBuilder';
+export {routify, type RoutifyOptions} from './core/integration';
 export {globalRegistry} from './core/registry';
 export * from './core/decorators';
 export * from './core/stream';

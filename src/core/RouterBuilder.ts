@@ -45,6 +45,7 @@ export class RouterBuilder {
     private _routes: Route[] = [];
     private _groups: RouteGroup[] = [];
     private _middlewares: Middleware[] = [];
+    private _lazyModules: Record<string, () => Promise<any>>[] = [];
     private _shouldLog = false;
     private static _registerWarned = false;
 
@@ -137,14 +138,20 @@ export class RouterBuilder {
 
     /**
      * Bulk registers routes and groups from a module collection.
-     * Ideal for use with Vite's `import.meta.glob` (with `{ eager: true }`).
-     *
-     * It will search for both default and named exports that are either `Route` or `RouteGroup`.
+     * Ideal for use with Vite's `import.meta.glob`.
+     * 
+     * Supports both eager and lazy globs. If a lazy glob is provided,
+     * it will be resolved automatically when the router is built and matched.
      *
      * @param modules A record of modules (e.g. from `import.meta.glob`).
      * @returns The current builder instance.
      */
     addModules(modules: Record<string, any>): this {
+        if (this.isLazyGlob(modules)) {
+            this._lazyModules.push(modules);
+            return this;
+        }
+
         const keys = Object.keys(modules).sort();
         
         if (this._shouldLog && keys.length > 0) {
@@ -373,7 +380,36 @@ export class RouterBuilder {
      *
      * @returns A fully resolved Astro route handler.
      */
-    build() {
+    build(): APIRoute {
+        if (this._lazyModules.length > 0) {
+            let initialized = false;
+            let builtHandler: APIRoute;
+
+            const handler: APIRoute = async (ctx) => {
+                if (!initialized) {
+                    for (const lazy of this._lazyModules) {
+                        await this.resolveLazyModules(lazy);
+                    }
+                    this.addRegistered();
+                    builtHandler = this._internalBuild();
+                    initialized = true;
+                }
+                return builtHandler(ctx);
+            };
+
+            // Expose metadata for debugging/testing
+            (handler as any).builder = this;
+            
+            return handler;
+        }
+
+        return this._internalBuild();
+    }
+
+    /**
+     * Internal implementation of the build process.
+     */
+    private _internalBuild(): APIRoute {
         // Collect all routes from builder and groups
         const allRoutes = [...this._routes];
         for (const group of this._groups) {
@@ -401,6 +437,25 @@ export class RouterBuilder {
         }));
 
         return defineRouter(finalRoutes, this._options);
+    }
+
+    private isLazyGlob(modules: Record<string, any>): boolean {
+        const values = Object.values(modules);
+        return values.length > 0 && values.every(v => typeof v === 'function');
+    }
+
+    private async resolveLazyModules(lazy: Record<string, () => Promise<any>>) {
+        const results: Record<string, any> = {};
+        const keys = Object.keys(lazy);
+        
+        if (this._shouldLog && keys.length > 0) {
+            console.log(`\x1b[36m[astro-routify]\x1b[0m Resolving ${keys.length} lazy modules...`);
+        }
+
+        for (const key of keys) {
+            results[key] = await lazy[key]();
+        }
+        this.addModules(results);
     }
 }
 
