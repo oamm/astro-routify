@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {RouterBuilder, defineRoute, ok, globalRegistry, HttpMethod} from '../src';
+import { defineGroup } from '../src';
 import type { APIContext } from 'astro';
 
 const createContext = (url: string, method: string): APIContext =>
@@ -103,5 +104,30 @@ describe('HMR Simulation', () => {
             .text()).toBe('a2');
         expect(await (await router2(createContext('http://localhost/api/b', HttpMethod.GET)))
             .text()).toBe('b2');
+    });
+
+    it('should not drop routes when multiple auto-registered groups share the same basePath', async () => {
+        const usersA = defineGroup('/users', (g) => {
+            g.addGet('/a', () => ok('a-v1'));
+        }, true);
+        const usersB = defineGroup('/users', (g) => {
+            g.addGet('/b', () => ok('b-v1'));
+        }, true);
+
+        const routerV1 = new RouterBuilder().addRegistered().build();
+        expect(await (await routerV1(createContext('http://localhost/api/users/a', HttpMethod.GET))).text()).toBe('a-v1');
+        expect(await (await routerV1(createContext('http://localhost/api/users/b', HttpMethod.GET))).text()).toBe('b-v1');
+
+        // Simulate HMR for only one of the modules
+        defineGroup('/users', (g) => {
+            g.addGet('/a', () => ok('a-v2'));
+        }, true);
+
+        const routerV2 = new RouterBuilder().addRegistered().build();
+        expect(await (await routerV2(createContext('http://localhost/api/users/a', HttpMethod.GET))).text()).toBe('a-v2');
+        expect(await (await routerV2(createContext('http://localhost/api/users/b', HttpMethod.GET))).text()).toBe('b-v1');
+
+        void usersA;
+        void usersB;
     });
 });

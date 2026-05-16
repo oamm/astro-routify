@@ -1,6 +1,7 @@
 import { ALLOWED_HTTP_METHODS, HttpMethod } from './HttpMethod';
 import type { Handler, Middleware } from './defineHandler';
 import { globalRegistry } from './registry';
+import { shouldLogRegistration } from './internal/devFlags';
 
 /**
  * Represents a single route definition.
@@ -73,7 +74,7 @@ export function defineRoute(
 	maybeHandler?: Handler,
 	maybeAutoRegister?: boolean
 ): Route {
-	let autoRegister = false;
+	let autoRegister: boolean;
 	let route: Route;
 
 	if (typeof methodOrRoute === 'object') {
@@ -94,7 +95,7 @@ export function defineRoute(
 
 	if (autoRegister) {
 		globalRegistry.register(route);
-        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development' || (import.meta as any).env?.DEV) {
+        if (shouldLogRegistration()) {
             console.log(`\x1b[36m[astro-routify]\x1b[0m route registered: \x1b[32m${route.method}\x1b[0m \x1b[33m${route.path}\x1b[0m`);
         }
 	}

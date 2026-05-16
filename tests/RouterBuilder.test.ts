@@ -152,4 +152,23 @@ describe('RouterBuilder', () => {
         expect(spy).toHaveBeenCalledWith(expect.stringContaining('matched'));
         spy.mockRestore();
     });
+
+    it('should initialize lazy modules only once under concurrent first requests', async () => {
+        const loader = vi.fn(async () => ({
+            default: defineRoute(HttpMethod.GET, '/lazy', () => ok('lazy-ok'))
+        }));
+
+        const router = new RouterBuilder({ basePath: '/api' })
+            .addModules({ './lazy.route.ts': loader })
+            .build();
+
+        const [res1, res2] = await Promise.all([
+            router(createContext('http://localhost/api/lazy', 'GET')),
+            router(createContext('http://localhost/api/lazy', 'GET')),
+        ]);
+
+        expect(await res1.text()).toBe('lazy-ok');
+        expect(await res2.text()).toBe('lazy-ok');
+        expect(loader).toHaveBeenCalledTimes(1);
+    });
 });

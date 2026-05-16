@@ -4,6 +4,24 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.7.1] - 2026-05-16
+
+### Fixed
+- **HMR route stability**: `addRegistered()` now deduplicates by `method:path` after flattening groups, preventing route loss when multiple auto-registered groups share the same `basePath`.
+- **Lazy init race**: first-request lazy module initialization is now concurrency-safe and runs once, avoiding duplicate module resolution/registration under concurrent requests.
+- **Dev-session memory growth**: global registry now compacts itself with bounded retention (default max: `1000` items), keeping only last-wins route versions.
+
+### Changed
+- **Sharper route keying**: centralized internal route-key generation to reduce drift across duplicate detection and compaction paths.
+- **Quieter default dev logs**: per-registration logs are now gated by `ASTRO_ROUTIFY_DEBUG_REGISTRATION=1`.
+
+### Added
+- `ASTRO_ROUTIFY_REGISTRY_MAX_ITEMS` environment variable to tune registry retention during long HMR sessions.
+- Regression coverage for shared-basePath HMR updates, concurrent lazy initialization, and long-session endurance with mixed registration.
+
+---
+
+
 ## [1.7.0] – 2026-02-08
 
 ### ✨ Added

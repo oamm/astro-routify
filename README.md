@@ -735,3 +735,16 @@ MIT — © 2025 [Alex Mora](https://github.com/oamm)
 ## ☕ Support
 
 If this project helps you, consider [buying me a coffee](https://coff.ee/alex_mora). Every drop keeps the code flowing!
+
+
+## HMR Stability & Memory Controls
+
+- Auto-registration follows a last-wins strategy by `method:path` and is resilient to repeated HMR cycles.
+- For long dev sessions, registry retention is bounded. Default max is `1000` items.
+- Override with `ASTRO_ROUTIFY_REGISTRY_MAX_ITEMS` when needed.
+- To log each registration event, set `ASTRO_ROUTIFY_DEBUG_REGISTRATION=1`.
+
+```bash
+ASTRO_ROUTIFY_REGISTRY_MAX_ITEMS=2000
+ASTRO_ROUTIFY_DEBUG_REGISTRATION=1
+```

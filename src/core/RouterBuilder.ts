@@ -5,6 +5,7 @@ import {defineGroup, RouteGroup} from './defineGroup';
 import {type Middleware} from './defineHandler';
 import {HttpMethod} from './HttpMethod';
 import {globalRegistry} from './registry';
+import { routeKey } from './internal/routeKey';
 
 /**
  * A fluent builder for creating and composing API routes in Astro.
@@ -35,7 +36,7 @@ import {globalRegistry} from './registry';
  * @example Auto-discovering routes via Vite glob:
  * ```ts
  * const router = new RouterBuilder()
- *   .addModules(import.meta.glob('./**\/*.routes.ts', { eager: true }));
+ *   .addModules(import.meta.glob('./**\\/*.routes.ts', { eager: true }));
  *
  * export const ALL = router.build();
  * ```
@@ -106,30 +107,27 @@ export class RouterBuilder {
             console.log(`\x1b[36m[astro-routify]\x1b[0m Auto-registering ${items.length} items from global registry...`);
         }
 
-        const lastRouteIndex = new Map<string, number>();
-        const routesByKey = new Map<string, Route>();
-        const lastGroupIndex = new Map<string, number>();
-        const groupsByKey = new Map<string, RouteGroup>();
-
-        items.forEach((item, index) => {
+        // Flatten all registered entries into routes and dedupe by method:path
+        // with a strict "last registration wins" policy. This avoids losing routes
+        // when multiple groups share the same basePath (common in HMR scenarios).
+        const flattened: Route[] = [];
+        for (const item of items) {
             if (item && typeof item === 'object' && (item as any)._routifyType === 'group') {
-                const key = (item as RouteGroup).getBasePath();
-                lastGroupIndex.set(key, index);
-                groupsByKey.set(key, item as RouteGroup);
+                flattened.push(...(item as RouteGroup).getRoutes());
             } else if (isRoute(item)) {
-                const key = `${item.method}:${item.path}`;
-                lastRouteIndex.set(key, index);
-                routesByKey.set(key, item);
+                flattened.push(item);
             }
+        }
+
+        const lastIndexByKey = new Map<string, number>();
+        flattened.forEach((route, index) => {
+            lastIndexByKey.set(routeKey(route), index);
         });
 
-        items.forEach((item, index) => {
-            if (item && typeof item === 'object' && (item as any)._routifyType === 'group') {
-                const key = (item as RouteGroup).getBasePath();
-                if (lastGroupIndex.get(key) === index) this.addGroup(groupsByKey.get(key)!);
-            } else if (isRoute(item)) {
-                const key = `${item.method}:${item.path}`;
-                if (lastRouteIndex.get(key) === index) this.addRoute(routesByKey.get(key)!);
+        flattened.forEach((route, index) => {
+            const key = routeKey(route);
+            if (lastIndexByKey.get(key) === index) {
+                this.addRoute(route);
             }
         });
 
@@ -384,15 +382,21 @@ export class RouterBuilder {
         if (this._lazyModules.length > 0) {
             let initialized = false;
             let builtHandler: APIRoute;
+            let initializationPromise: Promise<void> | null = null;
 
             const handler: APIRoute = async (ctx) => {
                 if (!initialized) {
-                    for (const lazy of this._lazyModules) {
-                        await this.resolveLazyModules(lazy);
+                    if (!initializationPromise) {
+                        initializationPromise = (async () => {
+                            for (const lazy of this._lazyModules) {
+                                await this.resolveLazyModules(lazy);
+                            }
+                            this.addRegistered();
+                            builtHandler = this._internalBuild();
+                            initialized = true;
+                        })();
                     }
-                    this.addRegistered();
-                    builtHandler = this._internalBuild();
-                    initialized = true;
+                    await initializationPromise;
                 }
                 return builtHandler(ctx);
             };
@@ -423,7 +427,7 @@ export class RouterBuilder {
         // Detect duplicates
         const seen = new Set<string>();
         for (const route of allRoutes) {
-            const key = `${route.method}:${route.path}`;
+            const key = routeKey(route);
             if (seen.has(key)) {
                 console.warn(`\x1b[33m[astro-routify]\x1b[0m Duplicate route detected: ${key}. The last one will be used.`);
             }
@@ -468,7 +472,7 @@ export class RouterBuilder {
  *
  * @example Auto-discovery via glob:
  * ```ts
- * export const ALL = createRouter(import.meta.glob('./**\/*.ts', { eager: true }));
+ * export const ALL = createRouter(import.meta.glob('./**\\/*.ts', { eager: true }));
  * ```
  *
  * @example Auto-registration via global registry:
