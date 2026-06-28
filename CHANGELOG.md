@@ -4,6 +4,17 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.7.2] - 2026-06-28
+
+### Changed
+- Expanded the Astro peer dependency range to include Astro 6 and Astro 7.
+- Upgraded the package test toolchain to Astro 7.0.3, Rollup 4.62.2, TypeScript 6.0.3, Undici 8.5.0, and Vitest 4.1.9.
+
+### Compatibility
+- Tested the current public type surface and routing behavior against Astro 7.0.3.
+
+---
+
 ## [1.7.1] - 2026-05-16
 
 ### Fixed
