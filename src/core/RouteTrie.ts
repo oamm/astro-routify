@@ -94,7 +94,7 @@ export class RouteTrie {
 
 	find(path: string, method: HttpMethod): RouteMatch {
 		const segments = this.segmentize(path, true);
-		return this.matchNode(this.root, segments, 0, method, {});
+		return this.matchNode(this.root, segments, 0, method, []);
 	}
 
 	private matchNode(
@@ -102,7 +102,7 @@ export class RouteTrie {
 		segments: string[],
 		index: number,
 		method: HttpMethod,
-        capturedValues: Record<number, string>
+		capturedValues: string[]
 	): RouteMatch {
 		if (index === segments.length) {
 			let info = node.routes.get(method) ?? null;
@@ -118,9 +118,9 @@ export class RouteTrie {
 			}
 
             if (info) {
-                const params: Record<string, string> = {};
-                for (const [depth, name] of Object.entries(info.paramNames)) {
-                    params[name] = capturedValues[Number(depth)];
+				const params: Record<string, string> = {};
+				for (const depth in info.paramNames) {
+					params[info.paramNames[Number(depth)]] = capturedValues[Number(depth)];
                 }
                 return { route: info.route, params };
             }
@@ -157,7 +157,7 @@ export class RouteTrie {
             if (match.route || (match.allowed && match.allowed.length > 0)) {
                 return match;
             }
-            delete capturedValues[index];
+			capturedValues.length = index;
 		}
 
 		// 4. Wildcard Match (*)

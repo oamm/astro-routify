@@ -44,6 +44,11 @@ export type Handler<State = any> = (
     ctx: RoutifyContext<State>
 ) => Promise<HandlerResult> | HandlerResult;
 
+export interface DefineHandlerOptions {
+    /** Enable request/response timing logs. Disabled by default for production overhead. */
+    debug?: boolean;
+}
+
 /**
  * Logs the incoming request method and path to the console.
  */
@@ -71,28 +76,28 @@ function logResponse(status: number, start: number) {
  * @param handler - A handler function returning a `Response` or `ResultResponse`
  * @returns An Astro-compatible `APIRoute` function
  */
-export function defineHandler(handler: Handler): APIRoute {
+export function defineHandler(handler: Handler, options: DefineHandlerOptions = {}): APIRoute {
     return async (ctx: APIContext): Promise<Response> => {
-        const start = performance.now();
+        const start = options.debug ? performance.now() : 0;
         try {
-            logRequest(ctx);
+            if (options.debug) logRequest(ctx);
 
             const result = await handler(ctx as RoutifyContext);
 
             // Native Response shortcut
             if (result instanceof Response) {
-                logResponse(result.status, start);
+                if (options.debug) logResponse(result.status, start);
                 return result;
             }
 
             // Structured ResultResponse or other HandlerResult → native Astro Response
             const finalResponse = toAstroResponse(result);
-            logResponse(finalResponse.status, start);
+            if (options.debug) logResponse(finalResponse.status, start);
             return finalResponse;
         } catch (err) {
             console.error('[astro-routify] handler error', err);
             const res = toAstroResponse(internalError(err));
-            logResponse(res.status, start);
+            if (options.debug) logResponse(res.status, start);
             return res;
         }
     };

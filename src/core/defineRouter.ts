@@ -158,7 +158,7 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
             }
             throw err;
         }
-    });
+    }, {debug: options.debug});
 
     (handler as any).routes = routes;
     (handler as any).options = options;

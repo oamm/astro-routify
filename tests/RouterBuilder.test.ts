@@ -153,6 +153,16 @@ describe('RouterBuilder', () => {
         spy.mockRestore();
     });
 
+    it('does not log every request unless debug is enabled', async () => {
+        const spy = vi.spyOn(console, 'info').mockImplementation(() => {});
+        const router = new RouterBuilder().addGet('/quiet', () => ok('ok')).build();
+
+        await router(createContext('http://localhost/api/quiet', 'GET'));
+
+        expect(spy).not.toHaveBeenCalled();
+        spy.mockRestore();
+    });
+
     it('should initialize lazy modules only once under concurrent first requests', async () => {
         const loader = vi.fn(async () => ({
             default: defineRoute(HttpMethod.GET, '/lazy', () => ok('lazy-ok'))
