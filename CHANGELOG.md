@@ -4,6 +4,26 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.7.3] - 2026-08-05
+
+### Added
+- Automatic `OPTIONS` fallback routes so `cors()` handles preflight requests without explicit `OPTIONS` routes.
+
+### Fixed
+- Credentialed CORS no longer reflects arbitrary origins and now supports correct `Vary: Origin` behavior.
+- Unsupported request methods return `405 Method Not Allowed` instead of `500 Internal Server Error`.
+- Default error responses no longer expose exception messages to clients.
+- Per-request logging is disabled unless router debugging is enabled.
+
+### Performance
+- Reduced allocations during trie parameter matching.
+- Kept generated preflight routes internal so route metadata and OpenAPI output remain unchanged.
+
+### Tests
+- Added coverage for CORS origin restrictions, preflight handling, unsupported methods, and default error redaction.
+
+---
+
 ## [1.7.2] - 2026-06-28
 
 ### Changed
