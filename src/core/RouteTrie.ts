@@ -106,12 +106,12 @@ export class RouteTrie {
 	): RouteMatch {
 		if (index === segments.length) {
 			let info = node.routes.get(method) ?? null;
-			let allowed = info ? undefined : [...node.routes.keys()];
+			let allowed = info ? undefined : this.allowedMethods(node.routes);
 
 			// If no route here, check if there's a catch-all that matches "empty" remaining
 			if (!info && node.catchAllChild) {
 				info = node.catchAllChild.routes.get(method) ?? null;
-				allowed = info ? undefined : [...node.catchAllChild.routes.keys()];
+				allowed = info ? undefined : this.allowedMethods(node.catchAllChild.routes);
                 if (info) {
                     return { route: info.route, allowed, params: { '*': '' } };
                 }
@@ -176,7 +176,7 @@ export class RouteTrie {
             
 			return {
 				route: info ? info.route : null,
-				allowed: info ? undefined : [...node.catchAllChild.routes.keys()],
+				allowed: info ? undefined : this.allowedMethods(node.catchAllChild.routes),
 				params,
 			};
 		}
@@ -194,5 +194,13 @@ export class RouteTrie {
                 return s;
             }
         }) : segments;
+	}
+
+	private allowedMethods(routes: Map<HttpMethod, RouteInfo>): HttpMethod[] {
+		const allowed: HttpMethod[] = [];
+		for (const [method, info] of routes) {
+			if (!info.route._routifyInternal) allowed.push(method);
+		}
+		return allowed;
 	}
 }

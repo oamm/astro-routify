@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RouterBuilder, ok } from '../src';
+import { RouterBuilder, cors, ok } from '../src';
 import type { APIContext } from 'astro';
 
 const createContext = (url: string, method: string): APIContext =>
@@ -9,6 +9,60 @@ const createContext = (url: string, method: string): APIContext =>
     } as unknown as APIContext);
 
 describe('Middleware System', () => {
+    it('does not reflect arbitrary origins when credentials are enabled', async () => {
+        const builder = new RouterBuilder();
+        builder.use(cors({credentials: true}));
+        builder.addGet('/cors', () => ok('ok'));
+        const router = builder.build();
+
+        const res = await router({
+            request: new Request('http://localhost/api/cors', {
+                headers: {Origin: 'https://attacker.example'},
+            }),
+            params: {},
+        } as unknown as APIContext);
+
+        expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    });
+
+    it('allows only configured credentialed origins', async () => {
+        const builder = new RouterBuilder();
+        builder.use(cors({origin: 'https://app.example', credentials: true}));
+        builder.addGet('/cors', () => ok('ok'));
+        const router = builder.build();
+
+        const res = await router({
+            request: new Request('http://localhost/api/cors', {
+                headers: {Origin: 'https://app.example'},
+            }),
+            params: {},
+        } as unknown as APIContext);
+
+        expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://app.example');
+        expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+    });
+
+    it('handles CORS preflight without an explicit OPTIONS route', async () => {
+        const builder = new RouterBuilder();
+        builder.use(cors({origin: 'https://app.example'}));
+        builder.addGet('/cors', () => ok('ok'));
+        const router = builder.build();
+
+        const res = await router({
+            request: new Request('http://localhost/api/cors', {
+                method: 'OPTIONS',
+                headers: {
+                    Origin: 'https://app.example',
+                    'Access-Control-Request-Method': 'GET',
+                },
+            }),
+            params: {},
+        } as unknown as APIContext);
+
+        expect(res.status).toBe(204);
+        expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://app.example');
+    });
+
     it('should execute global middlewares in order', async () => {
         const builder = new RouterBuilder();
         const logs: string[] = [];

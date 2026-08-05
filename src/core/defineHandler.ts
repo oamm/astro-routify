@@ -96,7 +96,8 @@ export function defineHandler(handler: Handler, options: DefineHandlerOptions = 
             return finalResponse;
         } catch (err) {
             console.error('[astro-routify] handler error', err);
-            const res = toAstroResponse(internalError(err));
+            // Do not expose exception messages in the default production response.
+            const res = toAstroResponse(internalError('Internal Server Error'));
             if (options.debug) logResponse(res.status, start);
             return res;
         }

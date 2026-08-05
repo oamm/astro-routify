@@ -3,7 +3,7 @@ import { defineHandler, type RoutifyContext } from './defineHandler';
 import { methodNotAllowed, notFound, toAstroResponse, type HandlerResult } from './responseHelpers';
 import { RouteTrie } from './RouteTrie';
 import type { Route } from './defineRoute';
-import { normalizeMethod } from './HttpMethod';
+import { HttpMethod, normalizeMethod } from './HttpMethod';
 
 /**
  * Optional configuration for the router instance.
@@ -56,8 +56,27 @@ export interface RouterOptions {
  */
 export function defineRouter(routes: Route[], options: RouterOptions = {}): APIRoute {
     const trie = new RouteTrie();
+    const effectiveRoutes = [...routes];
+    const optionPaths = new Set(
+        routes.filter(route => route.method === HttpMethod.OPTIONS).map(route => route.path)
+    );
 
+    // Give route middleware a chance to handle CORS preflight requests. These
+    // fallback routes stay internal and are excluded from handler metadata.
     for (const route of routes) {
+        if (route.method !== HttpMethod.OPTIONS && !optionPaths.has(route.path)) {
+            optionPaths.add(route.path);
+            effectiveRoutes.push({
+                method: HttpMethod.OPTIONS,
+                path: route.path,
+                handler: () => methodNotAllowed('Method Not Allowed'),
+                middlewares: route.middlewares,
+                _routifyInternal: true,
+            });
+        }
+    }
+
+    for (const route of effectiveRoutes) {
         trie.insert(route);
     }
 
@@ -107,7 +126,12 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
             path = pathname.slice(basePath.length);
         }
 
-        const method = normalizeMethod(routifyCtx.request.method);
+        let method;
+        try {
+            method = normalizeMethod(routifyCtx.request.method);
+        } catch {
+            return toAstroResponse(methodNotAllowed('Method Not Allowed'));
+        }
         const { route, allowed, params } = trie.find(path, method);
 
         if (options.debug) {

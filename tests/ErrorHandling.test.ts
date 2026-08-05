@@ -36,8 +36,18 @@ describe('Error Handling', () => {
         });
 
         const router = builder.build();
-        // defineHandler catches it and returns 500
         const res = await router(createContext('http://localhost/api/error', 'GET'));
         expect(res.status).toBe(500);
+        expect(await res.text()).not.toContain('Default Error');
+    });
+
+    it('returns 405 instead of 500 for an unsupported request method', async () => {
+        const builder = new RouterBuilder();
+        builder.addGet('/health', () => 'ok');
+        const router = builder.build();
+
+        const res = await router(createContext('http://localhost/api/health', 'HEAD'));
+
+        expect(res.status).toBe(405);
     });
 });

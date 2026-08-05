@@ -17,14 +17,38 @@ export interface CorsOptions {
  * Middleware to enable Cross-Origin Resource Sharing (CORS).
  */
 export function cors(options: CorsOptions = {}): Middleware {
+    const resolveAllowedOrigin = (requestOrigin: string | null): string | null => {
+        if (!requestOrigin) return null;
+
+        if (options.origin === undefined) {
+            return options.credentials ? null : '*';
+        }
+
+        if (typeof options.origin === 'string') {
+            if (options.origin === '*') return options.credentials ? null : '*';
+            return options.origin === requestOrigin ? requestOrigin : null;
+        }
+
+        if (Array.isArray(options.origin)) {
+            return options.origin.includes(requestOrigin) ? requestOrigin : null;
+        }
+
+        const resolved = options.origin(requestOrigin);
+        if (resolved === true) return requestOrigin;
+        if (typeof resolved === 'string' && resolved !== '*') return resolved;
+        return null;
+    };
+
     return async (ctx, next) => {
         const origin = ctx.request.headers.get('Origin');
+        const allowedOrigin = resolveAllowedOrigin(origin);
         
         // Handle preflight
         if (ctx.request.method === 'OPTIONS') {
             const headers = new Headers();
-            if (origin) {
-                headers.set('Access-Control-Allow-Origin', origin);
+            if (allowedOrigin) {
+                headers.set('Access-Control-Allow-Origin', allowedOrigin);
+                if (allowedOrigin !== '*') headers.set('Vary', 'Origin');
             }
             if (options.methods) {
                 headers.set('Access-Control-Allow-Methods', options.methods.join(','));
@@ -37,10 +61,10 @@ export function cors(options: CorsOptions = {}): Middleware {
                 const requestedHeaders = ctx.request.headers.get('Access-Control-Request-Headers');
                 if (requestedHeaders) headers.set('Access-Control-Allow-Headers', requestedHeaders);
             }
-            if (options.credentials) {
+            if (options.credentials && allowedOrigin) {
                 headers.set('Access-Control-Allow-Credentials', 'true');
             }
-            if (options.maxAge) {
+            if (options.maxAge !== undefined) {
                 headers.set('Access-Control-Max-Age', String(options.maxAge));
             }
             return new Response(null, { status: 204, headers });
@@ -49,13 +73,12 @@ export function cors(options: CorsOptions = {}): Middleware {
         const res = await next();
         const newHeaders = new Headers(res.headers);
         
-        if (origin) {
-            newHeaders.set('Access-Control-Allow-Origin', origin);
-        } else {
-            newHeaders.set('Access-Control-Allow-Origin', '*');
+        if (allowedOrigin) {
+            newHeaders.set('Access-Control-Allow-Origin', allowedOrigin);
+            if (allowedOrigin !== '*') newHeaders.append('Vary', 'Origin');
         }
 
-        if (options.credentials) {
+        if (options.credentials && allowedOrigin) {
             newHeaders.set('Access-Control-Allow-Credentials', 'true');
         }
 
