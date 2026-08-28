@@ -4,6 +4,19 @@ All notable changes to **astro-routify** will be documented in this file.
 
 ---
 
+## [1.7.4] - 2026-08-28
+
+### Fixed
+- Automatic router-generated `OPTIONS` routes now return `204 No Content` with an aggregated `Allow` header instead of `405 Method Not Allowed`.
+- Explicit user-defined `OPTIONS` routes continue to take precedence over generated fallbacks.
+- CORS middleware still handles browser preflight before later middleware and does not emit wildcard origins when credentials are enabled.
+- Empty `POST` and `DELETE` requests remain valid when no body validation middleware is configured.
+
+### Tests
+- Added regression coverage for DELETE/PATCH preflight handling, shared-path method aggregation, explicit `OPTIONS` overrides, CORS requested headers, credentialed origins, middleware ordering, and empty-body validation behavior.
+
+---
+
 ## [1.7.3] - 2026-08-05
 
 ### Added

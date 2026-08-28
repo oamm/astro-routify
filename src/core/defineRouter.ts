@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { defineHandler, type RoutifyContext } from './defineHandler';
-import { methodNotAllowed, notFound, toAstroResponse, type HandlerResult } from './responseHelpers';
+import { methodNotAllowed, noContent, notFound, toAstroResponse, type HandlerResult } from './responseHelpers';
 import { RouteTrie } from './RouteTrie';
 import type { Route } from './defineRoute';
 import { HttpMethod, normalizeMethod } from './HttpMethod';
@@ -60,16 +60,30 @@ export function defineRouter(routes: Route[], options: RouterOptions = {}): APIR
     const optionPaths = new Set(
         routes.filter(route => route.method === HttpMethod.OPTIONS).map(route => route.path)
     );
+    const methodsByPath = new Map<string, Set<HttpMethod>>();
+
+    for (const route of routes) {
+        let methods = methodsByPath.get(route.path);
+        if (!methods) {
+            methods = new Set<HttpMethod>();
+            methodsByPath.set(route.path, methods);
+        }
+        methods.add(route.method);
+    }
 
     // Give route middleware a chance to handle CORS preflight requests. These
     // fallback routes stay internal and are excluded from handler metadata.
     for (const route of routes) {
         if (route.method !== HttpMethod.OPTIONS && !optionPaths.has(route.path)) {
             optionPaths.add(route.path);
+            const methods = methodsByPath.get(route.path) ?? new Set<HttpMethod>();
+            methods.add(HttpMethod.OPTIONS);
+            const allow = Array.from(methods).join(', ');
+
             effectiveRoutes.push({
                 method: HttpMethod.OPTIONS,
                 path: route.path,
-                handler: () => methodNotAllowed('Method Not Allowed'),
+                handler: () => noContent({ Allow: allow }),
                 middlewares: route.middlewares,
                 _routifyInternal: true,
             });
